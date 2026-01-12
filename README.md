@@ -14,7 +14,7 @@
 **安装方式**:
 
 ```bash
-openskills install https://github.com/your-username/ai-skills-collection/tree/main/master-architect-workflow-skill
+openskills install https://github.com/chisdy/ai-skills-collection/tree/main/master-architect-workflow-skill
 ```
 
 ## 使用说明
