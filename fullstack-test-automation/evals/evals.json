@@ -1,0 +1,49 @@
+{
+  "skill_name": "fullstack-test-automation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我有一个 React 19 + FastAPI 的全栈项目，用户模块刚写完但没有任何测试。帮我为 UserCard 组件（显示用户名、邮箱、头像，有删除按钮）和 POST /api/users 接口（创建用户，需要校验邮箱唯一性）写完整的测试用例，然后运行测试，如果有失败就帮我修复。",
+      "expected_output": "生成前端组件测试（渲染、交互、边界状态）和后端 API 测试（成功、重复邮箱 409、参数校验 422），运行测试，修复任何失败，最终全部通过",
+      "files": [],
+      "assertions": [
+        {"text": "UserCard.test.tsx 存在且包含渲染测试（render、screen）"},
+        {"text": "test_users.py 存在且包含 POST /api/users 的测试"},
+        {"text": "测试覆盖成功创建用户的 happy path（status 201）"},
+        {"text": "测试覆盖重复邮箱返回 409 的场景"},
+        {"text": "测试覆盖参数校验失败返回 422 的场景"},
+        {"text": "conftest.py 存在且包含 client fixture（httpx AsyncClient）"},
+        {"text": "setup.ts 包含 MSW server 配置（beforeAll/afterEach/afterAll）"},
+        {"text": "summary.md 描述了调试循环过程或测试运行结果"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我的 Vue 3 + Fastify 项目里有一个 useAuth composable，负责登录、登出、token 刷新。现在有几个测试跑不过：\n1. 'should clear token on logout' - 报错 localStorage is not defined\n2. 'should refresh token when expired' - 报错 Cannot read properties of undefined (reading 'access_token')\n帮我分析原因并修复这些测试。",
+      "expected_output": "分析每个失败原因（localStorage 需要 jsdom 环境配置，token 刷新的 mock 返回值结构不对），修复测试代码，重新运行直到通过",
+      "files": [],
+      "assertions": [
+        {"text": "summary.md 正确识别 localStorage 问题的根因（jsdom 环境未配置 或 vi.stubGlobal）"},
+        {"text": "summary.md 正确识别 token mock 结构问题（access_token 字段缺失或嵌套错误）"},
+        {"text": "useAuth.test.ts 包含 localStorage 的正确处理（environment: jsdom 或 vi.stubGlobal）"},
+        {"text": "useAuth.test.ts 中 token 刷新的 mock 返回值包含正确的 access_token 结构"},
+        {"text": "summary.md 区分了哪些是测试写错（修测试）vs 哪些是代码 bug（修代码）"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我要用 TDD 方式开发一个 FastAPI 的分页查询接口 GET /api/products?page=1&size=20，支持按名称搜索和价格范围过滤。先帮我写测试用例（此时接口还不存在，测试应该失败），然后实现接口，最后跑通所有测试。",
+      "expected_output": "先写测试（覆盖分页、搜索、过滤、边界值），运行确认测试失败（红灯），实现接口代码，再次运行直到全绿",
+      "files": [],
+      "assertions": [
+        {"text": "summary.md 明确描述了 TDD 流程：先写测试（红灯），再实现（绿灯）"},
+        {"text": "test_products.py 包含分页参数测试（page、size 参数）"},
+        {"text": "test_products.py 包含名称搜索测试（search 或 name 参数）"},
+        {"text": "test_products.py 包含价格范围过滤测试（min_price、max_price 或类似参数）"},
+        {"text": "test_products.py 包含边界值测试（无效 page/size、空结果等）"},
+        {"text": "products_router.py 存在且实现了 GET /api/products 接口"},
+        {"text": "products_schema.py 包含分页响应 schema（total、items、page、size 等字段）"}
+      ]
+    }
+  ]
+}

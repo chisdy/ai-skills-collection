@@ -1,0 +1,93 @@
+{
+  "skill_name": "fullstack-expert-skill",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "new-project-scaffold",
+      "prompt": "我想搭一个全栈项目，做一个内部用的任务管理系统，帮我开始",
+      "expected_output": "应主动向用户提问技术选型（前端框架、后端框架、UI库、图标库），以及业务需求（认证方式、数据库、部署方式等），而不是直接开始写代码",
+      "assertions": [
+        {
+          "name": "asks_frontend_framework",
+          "description": "询问前端框架选择（React 或 Vue）"
+        },
+        {
+          "name": "asks_backend_framework",
+          "description": "询问后端框架选择（FastAPI 或 Fastify）"
+        },
+        {
+          "name": "asks_ui_library",
+          "description": "列出 UI 组件库选项供用户选择"
+        },
+        {
+          "name": "asks_icon_library",
+          "description": "列出图标库选项供用户选择"
+        },
+        {
+          "name": "asks_auth",
+          "description": "询问认证方式需求"
+        },
+        {
+          "name": "no_code_before_questions",
+          "description": "在收集完需求前不直接输出项目代码"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "vue-fastify-combo",
+      "prompt": "我选择用 Vue 做前端，Fastify 做后端，帮我设计用户模块的完整实现，包括后端 API 和前端调用",
+      "expected_output": "使用 Vue 3.5 + Pinia + TanStack Query for Vue，以及 Fastify + Zod + Prisma，遵循统一响应格式 {code, message, data}",
+      "assertions": [
+        {
+          "name": "uses_vue3_composition_api",
+          "description": "前端使用 Vue 3 Composition API（script setup）"
+        },
+        {
+          "name": "uses_pinia",
+          "description": "状态管理使用 Pinia 而非 Vuex"
+        },
+        {
+          "name": "uses_fastify_zod",
+          "description": "后端使用 Fastify + Zod 做 Schema 验证"
+        },
+        {
+          "name": "unified_response_format",
+          "description": "API 响应遵循 {code, message, data} 格式"
+        },
+        {
+          "name": "uses_pnpm",
+          "description": "安装命令使用 pnpm 而非 npm"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "api-response-design",
+      "prompt": "帮我设计一套 FastAPI 的 API 响应规范，需要有统一的响应体格式，包括列表分页、详情、创建、删除等不同类型的响应，以及错误码体系",
+      "expected_output": "输出包含 code/message/data 的统一响应结构，PageData 分页模型，ResponseCode 枚举，以及各类型响应示例",
+      "assertions": [
+        {
+          "name": "has_code_message_data",
+          "description": "响应体包含 code、message、data 三个字段"
+        },
+        {
+          "name": "has_response_code_enum",
+          "description": "定义了业务错误码枚举（如 0=成功，1001=参数错误等）"
+        },
+        {
+          "name": "has_pagination_model",
+          "description": "包含分页响应模型（含 total、page、size、hasNext 等字段）"
+        },
+        {
+          "name": "has_multiple_response_types",
+          "description": "覆盖了列表、详情、创建、删除等多种响应类型示例"
+        },
+        {
+          "name": "has_exception_handler",
+          "description": "包含全局异常处理器实现"
+        }
+      ]
+    }
+  ]
+}
