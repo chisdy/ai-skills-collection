@@ -14,8 +14,8 @@ Thumbs.db
 test-*
 debug-*
 
-# Skill eval workspace（运行产物，不提交）
-*-workspace/
+# Skill eval workspaces（运行产物，不提交）
+workspaces/
 
 # 构建产物
 *.skill
