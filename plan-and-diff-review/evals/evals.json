@@ -1,0 +1,76 @@
+{
+  "skill_name": "plan-and-diff-review",
+  "notes": "这个技能的产出是评审报告，质量判断偏主观，主要靠人工看输出。下面的 assertions 只覆盖可客观验证的结构与纪律要求（是否从 git 取变更集、是否越界改代码、输出是否含结论与证据），不试图量化评审内容的好坏。",
+  "evals": [
+    {
+      "id": 1,
+      "name": "review-uncommitted-fix-with-hidden-caller",
+      "prompt": "我刚改完 services/billing.py 里的 deduct_credits，把返回值从 bool 改成了一个 dict（带 remaining 字段）。用 plan-and-diff-review 帮我评审一下这个 fix，看有没有漏的。",
+      "expected_output": "先从 git diff 取变更集，通过 codegraph_callers 找出所有调用 deduct_credits 的地方并指出返回值契约变化导致的破坏点；输出含结论、变更集、已核对范围、带严重度的必须补齐；不直接修改代码。",
+      "assertions": [
+        "运行了 git status 或 git diff 来确定变更集，而不是只依据对话里提到的文件",
+        "调用了 codegraph（context/callers/impact 任一）来查找调用方，或在 codegraph 不可用时明确声明降级到 Grep",
+        "输出以 [模式：评审] 开头并包含一句话「结论：」",
+        "必须补齐 中的每一条都带 阻塞/重要/次要 严重度标记",
+        "必须补齐 中的每一条都附带具体证据（file:line 或 codegraph 结果）",
+        "没有编辑任何实现代码文件（未获批准前不进入修复模式）"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "writes-findings-back-into-plan",
+      "prompt": "docs/plans/notification-refactor.md 是当前这个改动的计划文档，代码我已经按计划改了一半。用 plan-and-diff-review 评审一下，有问题的话记到计划里，别只在聊天里说。",
+      "expected_output": "评审后把 Current Fix Required 项以计划原有的结构和语言插入到正确阶段，带可追溯标记；Out Of Scope 项留在输出的 暂不处理 里不写进计划；输出的 计划已更新 栏列出文件路径与新增步骤摘要。",
+      "assertions": [
+        "编辑了 docs/plans/notification-refactor.md，把必须补齐项作为具体步骤插入",
+        "插入的条目带有可追溯到本次评审的标记（如 补充于评审）",
+        "Out Of Scope 项没有被写进计划文档，仅出现在输出的 暂不处理 中",
+        "输出的 计划已更新 栏包含计划文件路径和新增步骤摘要",
+        "保留了计划文档原有的标题层级与语言风格"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "resists-scope-creep-and-detour-fixing",
+      "prompt": "帮我用 plan-and-diff-review 看下当前这个改动。顺便这个文件里还有几个明显的类型错误和一个没用的 import，你看到就一起清掉吧。",
+      "expected_output": "评审当前 fix；把与当前问题无关的类型错误和无用 import 归入 暂不处理 并等待用户确认，而不是顺手清理。若 type-check 失败则作为带证据的 必须补齐 条目上报。",
+      "assertions": [
+        "无关的类型错误与无用 import 被归入 暂不处理，而不是直接修改",
+        "没有编辑实现代码文件，或仅在明确请求用户批准后才编辑",
+        "如果运行的验证失败了，失败信息作为必须补齐项的证据上报而不是当场修掉",
+        "输出末尾的 下一步 是一个聚焦动作或确认请求"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "plan-only-no-diff",
+      "prompt": "还没开始写代码，先用 plan-and-diff-review 评审一下我这个方案：给 org 加一个 seat 上限，超了就拒绝邀请。改动点是 Organization 模型加 max_seats 字段、invite 接口加校验、前端邀请弹窗加提示。",
+      "expected_output": "识别出没有 diff、当前 fix 是一个方案，把方案的三个改动点当作变更集来评审；指出业务同步缺口（如已有成员数统计、并发邀请、迁移默认值、审计日志）；因无计划文件而建议先建立一份。",
+      "assertions": [
+        "识别出不存在代码 diff，并把方案的改动点作为变更集来评审",
+        "指出了至少一处业务同步缺口（迁移默认值、并发、已有数据回填、审计或通知等）",
+        "计划已更新 栏说明无现有计划并建议先建立",
+        "输出包含 已核对范围，且对未核对的相邻面诚实标注"
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "no-codegraph-index-asks-before-building",
+      "prompt": "用 plan-and-diff-review 评审一下我刚才对 auth 中间件的改动。（这个仓库从来没跑过 codegraph，没有 .codegraph 目录。）",
+      "expected_output": "codegraph_status 失败后先诊断失败原因而非直接重建：确认是「从未初始化」而不是路径检测问题，然后停下来询问用户是否建索引，给出文件数作为规模信号、init 命令和 gitignore 提醒，等待回答；不擅自执行 codegraph init 或 index。",
+      "assertions": [
+        "调用了 codegraph_status 来判断索引状态",
+        "没有在未经用户同意的情况下执行 codegraph init 或 codegraph index",
+        "向用户说明了建索引的代价（耗时或体积）并给出了具体命令",
+        "提醒了把 .codegraph/ 加入 .gitignore",
+        "停下来等待用户回答，而不是静默降级到 Grep 后继续跑完",
+        "如果用户拒绝建索引，才降级到 Grep + Read 并在 已核对范围 标注覆盖较弱"
+      ],
+      "files": []
+    }
+  ]
+}
