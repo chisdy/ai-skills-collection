@@ -1,0 +1,74 @@
+{
+  "skill_name": "implementation-review",
+  "notes": "评审报告的质量偏主观，下面的断言只覆盖可客观验证的部分：埋在 fixture 里的陷阱有没有被抓到（链外调用方、未实现/偏离的计划步骤、安全漏洞、业务同步缺口）、纪律有没有被守住（不碰实现代码、抗范围蔓延、必修项写回计划）、输出结构是否完整。措辞好坏交给人工看。\n\nfixture-repo 是干净基线（计划文档是校正版，基本正确——错的是实现）；每个用例有一个 overlay 目录，叠加后形成未提交的 diff，模拟「按计划写完但有问题的代码」。",
+  "fixture": "evals/implementation-review/fixture-repo",
+  "fixture_setup": "cp -R evals/implementation-review/fixture-repo <run-dir>/repo && cd <run-dir>/repo && git init -q && git add -A && git commit -qm init && cp -R evals/implementation-review/overlays/<overlay>/. <run-dir>/repo/",
+  "evals": [
+    {
+      "id": 1,
+      "name": "conformance-gaps-and-hidden-caller",
+      "overlay": "seat-limit-implemented",
+      "prompt": "我按 docs/plans/seat-limit.md 把席位上限写完了，改动还没提交。用 implementation-review 帮我评审一下这个实现，看有没有漏的。",
+      "expected_output": "从 git diff 取变更集；逐步核对计划符合度：步骤 2 偏离（只算了 count_active_members，没把 pending 邀请计入，可被未接受邀请绕过上限）、步骤 4 前端提示未实现、步骤 5 测试未实现；通过 codegraph/grep 找出 diff 外的 bulk_invite 调用方——rejected dict 没有 invitation_id，import_invites_from_csv 会 KeyError；必修项按严重度写回 seat-limit.md；不修改任何实现代码。",
+      "assertions": [
+        "运行了 git status 或 git diff 来确定变更集，而不是只依据对话",
+        "输出包含 计划符合度 小节，逐步骤标注 已实现/部分实现/未实现/偏离",
+        "指出步骤 2 偏离：只统计了活跃成员，pending 邀请未计入上限，可被绕过",
+        "指出步骤 4（前端提示）和步骤 5（测试）未实现",
+        "找出 app/tasks/bulk_invite.py 是 invite_member 的链外调用方，rejected dict 缺 invitation_id 会导致 KeyError，且计划和 diff 都漏了它",
+        "必须补齐 中的每一条都带 阻塞/重要/次要 标记并附具体证据",
+        "编辑了 docs/plans/seat-limit.md，把必修项写回并带可追溯标记",
+        "没有编辑 app/ 或 web/ 下的任何实现代码文件"
+      ],
+      "files": ["docs/plans/seat-limit.md"]
+    },
+    {
+      "id": 2,
+      "name": "security-holes-in-new-endpoint",
+      "overlay": "member-list-implemented",
+      "prompt": "成员列表接口我按 docs/plans/member-list-endpoint.md 写好了（未提交），用 implementation-review 评审下能不能合并，重点帮我把把安全。",
+      "expected_output": "抓出两个安全问题：list_members_endpoint 完全没有成员身份校验，任何 current_user_id 都能列出任意组织的成员（计划验收明确要求非成员 403），属 阻塞+安全；端点计划外地把 pending 邀请的邮箱一并返回，属敏感数据暴露且是计划外改动。同时指出计划各步骤的验收测试都没写（未实现）。必修项写回计划；不修改实现代码。",
+      "assertions": [
+        "指出 list_members_endpoint 缺少成员身份/权限校验，任何用户可列出任意组织成员，标为阻塞且带安全标记",
+        "指出返回 pending 邀请邮箱是计划外改动且构成敏感数据暴露",
+        "指出计划里要求的单测/组件测试没有写，对应步骤的验收未实现",
+        "输出包含 安全评审 小节，覆盖权限与敏感数据两个域",
+        "编辑了 docs/plans/member-list-endpoint.md，把必修项写回并带可追溯标记",
+        "没有编辑 app/ 或 web/ 下的任何实现代码文件"
+      ],
+      "files": ["docs/plans/member-list-endpoint.md"]
+    },
+    {
+      "id": 3,
+      "name": "clean-diff-not-rubber-stamped-scope-creep-resisted",
+      "overlay": "failure-reason-implemented",
+      "prompt": "docs/plans/invite-failure-reason.md 我已经全部实现完了（未提交），用 implementation-review 确认下能不能合并。另外你评审的时候看到仓库里别的什么问题，直接顺手一起修掉就行，不用问我。",
+      "expected_output": "逐步核对后确认五个步骤全部已实现且链上调用方（bulk_invite、endpoint、前端）都已适配，结论为可以合并；保留 计划符合度、已核对范围、安全评审（未发现）、已执行验证 作为证据，不为凑数编造阻塞项；对「顺手修别的」的请求不执行，新发现的问题归入 暂不处理 等待确认；不修改实现代码。",
+      "assertions": [
+        "结论为 可以合并（没有编造阻塞级问题）",
+        "计划符合度 小节逐步骤给出 已实现 及证据（至少覆盖 has_pending_invitation、bulk_invite 跳过逻辑、前端 reason 映射）",
+        "保留了 安全评审 小节并如实写明未发现（或仅列低severity项）",
+        "尽管用户授权顺手修，仍未修改任何与本计划无关的代码，新发现问题归入 暂不处理",
+        "质量类意见（如有）放在 改进建议 且未因此改变 可以合并 的结论",
+        "运行了至少一项验证（测试或类型检查）并在 已执行验证 中记录结果"
+      ],
+      "files": ["docs/plans/invite-failure-reason.md"]
+    },
+    {
+      "id": 4,
+      "name": "no-plan-doc-missing-sync-and-idor",
+      "overlay": "accept-endpoint-no-plan",
+      "prompt": "我刚加了个接受邀请的端点（未提交），没写计划文档。用 implementation-review 帮我评审下这个 diff。",
+      "expected_output": "识别出没有计划文档：仍然评审 diff，但在报告中写明并建议先补一份计划（计划已更新 栏写「无现有计划，建议先建立」或直接建一份草稿）。抓出：成员数变化后没有调用 billing.sync_seat_usage（README 与 billing 文档字符串都写明必须调）；任何 current_user_id 都能接受任意 invitation_id 的邀请、不校验邀请归属或邮箱匹配（IDOR，阻塞+安全）；不校验 expires_at；invitation_id 不存在时 next() 抛 StopIteration 变 500；无审计、无通知。",
+      "assertions": [
+        "运行了 git status 或 git diff 来确定变更集",
+        "指出接受邀请后缺少 billing.sync_seat_usage 调用（业务同步缺口）",
+        "指出任何用户可接受任意邀请（未校验归属/邮箱匹配），标为阻塞且带安全标记",
+        "指出至少一项健壮性问题：expires_at 未校验，或 invitation_id 不存在时抛异常",
+        "报告写明无计划文档并建议先建立（或主动落一份草稿并告知路径）",
+        "没有编辑 app/ 或 web/ 下的任何实现代码文件"
+      ],
+      "files": []
+    }
+  ]
+}

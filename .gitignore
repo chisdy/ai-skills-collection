@@ -17,6 +17,10 @@ debug-*
 # Skill eval workspaces（运行产物，不提交）
 workspaces/
 
+# Python
+__pycache__/
+*.pyc
+
 # 构建产物
 *.skill
 dist/

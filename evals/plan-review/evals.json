@@ -1,0 +1,99 @@
+{
+  "skill_name": "plan-review",
+  "notes": "评审报告的质量偏主观，所以下面的断言只覆盖可客观验证的部分：埋在 fixture-repo 里的具体陷阱有没有被抓到、纪律有没有被守住（不碰实现代码、不重新设计方案、必修项写回计划）、输出结构是否完整。评审措辞的好坏交给人工看。\n\n所有用例都跑在 evals/plan-review/fixture-repo 上：subagent 先把它复制到自己的运行目录并 git init + commit，这样每个 run 拿到干净且互不干扰的一份，同时保证 git status / git diff 可用。",
+  "fixture": "evals/plan-review/fixture-repo",
+  "fixture_setup": "cp -R evals/plan-review/fixture-repo <run-dir>/repo && cd <run-dir>/repo && git init -q && git add -A && git commit -qm init",
+  "evals": [
+    {
+      "id": 1,
+      "name": "false-premises-in-plan",
+      "prompt": "用 plan-review 帮我评审一下 docs/plans/seat-limit.md 这个方案，还没开始写代码，先看看有没有问题。",
+      "expected_output": "抓出计划的前提错误（Organization 没有 seat_limit 字段、实际叫 max_members；invite_member 返回 dict 不是 bool）、漏掉的第二个调用方 app/tasks/bulk_invite.py、以及业务同步缺口（billing.sync_seat_usage、审计日志、pending 邀请是否计入上限）；把必修项按严重度写回 docs/plans/seat-limit.md；不修改任何 app/ 或 web/ 下的实现代码。",
+      "assertions": [
+        "指出 Organization 模型没有 seat_limit 字段，实际字段是 max_members",
+        "指出 invite_member 实际返回 dict 而非计划所说的 bool",
+        "找出 app/tasks/bulk_invite.py 是 invite_member 的第二个调用方，计划漏列了它",
+        "指出至少一处业务同步缺口（billing.sync_seat_usage / 审计日志 / 通知 / pending 邀请是否占用席位）",
+        "指出「更新相关的前端逻辑」这一步描述不足或缺少验收方式",
+        "输出以 [计划评审] 开头并包含一句话「结论：」",
+        "必须补齐 中的每一条都带 阻塞/重要/次要 标记，且附具体证据（file:line 或 codegraph 结果）",
+        "编辑了 docs/plans/seat-limit.md，把必修项作为具体步骤写回，并带可追溯标记",
+        "没有编辑 app/ 或 web/ 下的任何实现代码文件"
+      ],
+      "files": ["docs/plans/seat-limit.md"]
+    },
+    {
+      "id": 2,
+      "name": "ordering-and-staging",
+      "prompt": "docs/plans/seat-usage-storage.md 是我写的迁移方案，用 plan-review 看一下能不能直接照着做。",
+      "expected_output": "识别出步骤顺序问题：第 1 步先把读取切到还不存在的新表（建表回填在第 2 步、双写在第 3 步）、第 4 步前端先于第 5 步后端上线；指出「上线后看下数据对不对」不构成验收标准，每步缺少可验证的检查；给出可独立上线的切分点；在计划文档里重排步骤并说明原因。",
+      "assertions": [
+        "指出第 1 步把读取切到新表发生在建表回填（第 2 步）和双写（第 3 步）之前，顺序错误",
+        "指出前端接入（第 4 步）排在后端接口上线（第 5 步）之前",
+        "指出「上线后看下数据对不对」不构成验收标准，或指出各步骤缺少可验证的检查方式",
+        "输出的 计划可执行性 小节同时覆盖 顺序与依赖、分阶段、验收标准 三项",
+        "在 docs/plans/seat-usage-storage.md 中重排了步骤顺序或写入了顺序约束，并说明了原因",
+        "没有编辑 app/ 或 web/ 下的任何实现代码文件"
+      ],
+      "files": ["docs/plans/seat-usage-storage.md"]
+    },
+    {
+      "id": 3,
+      "name": "chat-only-plan-written-down",
+      "prompt": "还没写文档，方案我口头说一下你用 plan-review 评审：给邀请加个过期时间，超过 7 天没接受就自动失效。改动是 Invitation 加 expires_at、创建时填 now+7d、接受邀请时校验过期、前端列表把过期的置灰。",
+      "expected_output": "先把口头方案落成一份简短的计划文档（放在 docs/plans/ 下，与仓库现有约定一致）并告知路径，再对它做评审；核对前提时发现 Invitation 已有 expires_at 字段（当前可空、未被写入）；指出 accept_invitation 目前没有任何过期校验、以及过期邀请是否仍占用席位等同步问题。",
+      "assertions": [
+        "在评审前先把口头方案写成了一份计划文档，并告知了文件路径",
+        "新建的计划文档放在 docs/plans/ 下，与仓库既有约定一致",
+        "核对前提时读了 app/models/membership.py，指出 Invitation 已有 expires_at 字段（可空且当前无人写入）",
+        "指出 repositories/membership.py 的 accept_invitation 目前没有过期校验",
+        "输出包含 前提核对 小节，逐项标注存在/不存在/形状不符并附证据",
+        "没有编辑 app/ 或 web/ 下的任何实现代码文件"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "resists-redesign-and-scope-creep",
+      "prompt": "用 plan-review 评审 docs/plans/seat-limit.md。另外我觉得这个方案不如整个换成按用量计费，你直接帮我改成那个方向吧；还有仓库里别的问题你看到了也顺手一起修了。",
+      "expected_output": "仍然评审用户写的那个方案，不把它重写成按用量计费；替代方向最多在 计划可执行性-选型 里以一句话加代价对比提出并交回用户决定；与当前问题无关的其他问题归入 暂不处理 等待确认，不顺手修改；不编辑实现代码。",
+      "assertions": [
+        "评审的仍然是原方案（席位上限），没有把计划文档重写成按用量计费",
+        "对「换成按用量计费」的处理是提出并交回用户决定，而不是直接采纳执行",
+        "与当前问题无关的其他问题被归入 暂不处理，而不是直接修改",
+        "没有编辑 app/ 或 web/ 下的任何实现代码文件",
+        "输出末尾的 下一步 是一个聚焦动作或确认请求"
+      ],
+      "files": ["docs/plans/seat-limit.md"]
+    },
+    {
+      "id": 5,
+      "name": "clean-plan-not-rubber-stamped",
+      "prompt": "用 plan-review 看下 docs/plans/member-list-endpoint.md，这个方案我觉得没什么问题，帮我确认一下能不能开工。",
+      "expected_output": "核对后确认前提成立（listMembers 确实已存在且请求 /api/orgs/{orgId}/members、count_active_members 存在、现有端点签名风格一致），结论为 可以开工；保留 前提核对、已核对范围、计划可执行性 小节作为证据；不为了凑数编造阻塞项。",
+      "assertions": [
+        "结论为 可以开工（没有编造阻塞级问题）",
+        "保留了 前提核对 小节，并逐项给出证据（至少覆盖 listMembers 与 count_active_members）",
+        "保留了 已核对范围 小节，且对未核对的相邻面诚实标注",
+        "保留了 计划可执行性 小节，选型一项在无更优路径时写明当前路径合理",
+        "没有编辑 app/ 或 web/ 下的任何实现代码文件"
+      ],
+      "files": ["docs/plans/member-list-endpoint.md"]
+    },
+    {
+      "id": 6,
+      "name": "isolate-other-business-walk-current-chain",
+      "prompt": "用 plan-review 评审 docs/plans/invite-failure-reason.md。这是已有邀请/审计/撤销流程的稳定项目上的一个小改动。",
+      "expected_output": "标为已有稳定代码。问题链要覆盖 invite_member 的所有写入入口（API 与 bulk_invite），不能只改 InviteDialog。同时指出两处泄漏：把 invite_member 改成 bool 会破坏既有 dict 契约（含 invitation_id）；给 audit.record 加必填 reason 会破坏链外的 revoke_invitation。正确修法是在当前问题层适配（dict 上加错误字段），而不是改共享契约，也不要把撤销流程并进本计划。",
+      "assertions": [
+        "仓库语境标为已有稳定代码（或等价表述），并画出了当前问题链",
+        "指出 app/tasks/bulk_invite.py 是同一问题链上的写入入口，计划漏列了它",
+        "指出把 invite_member 返回值从 dict 改成 bool 会破坏既有调用契约，应在当前问题层适配而不是改共享返回类型",
+        "指出给 audit.record 增加必填参数会扰动链外的 revoke_invitation，属于泄漏，不应把撤销流程并入本计划",
+        "输出包含 隔离 小节，且对链外调用方给出「扰动 / 不扰动」判断",
+        "没有编辑 app/ 或 web/ 下的任何实现代码文件"
+      ],
+      "files": ["docs/plans/invite-failure-reason.md"]
+    }
+  ]
+}
