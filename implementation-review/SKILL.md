@@ -1,9 +1,9 @@
 ---
 name: implementation-review
-description: Reviews the code written for one plan after implementation — the post-code counterpart to plan-review. Establishes the change set from git diff, audits plan-to-code conformance in both directions (unimplemented steps, silent deviations, unplanned changes), maps off-diff callers and sync sites with codegraph, checks logic completeness and business-layer synchronization, runs a security review over the change's attack surface (authorization, injection, sensitive-data exposure, input validation, dangerous primitives), and reviews code quality (readability, structure, performance) with blocking findings separated from non-blocking suggestions. Writes must-fix findings back into the plan document. Use only when explicitly requested.
+description: Reviews the code written for one plan after implementation — the post-code counterpart to plan-review. Establishes the change set from git diff, audits plan-to-code conformance in both directions (unimplemented steps, silent deviations, unplanned changes), maps off-diff callers and sync sites with codegraph, checks logic completeness and business-layer synchronization, runs a security review over the change's attack surface (authorization, injection, sensitive-data exposure, input validation, dangerous primitives), and reviews code quality (readability, structure, performance) with blocking findings separated from non-blocking suggestions. Produces a report with a plan-update proposal; code is only modified after user approval (or upfront pre-authorization for unambiguous fixes), and plan documents only after an explicit user choice — never automatically. Use only when explicitly requested.
 disable-model-invocation: true
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   author: chisdy
 ---
 
@@ -30,10 +30,23 @@ These instructions are in English; the deliverable is not. Write the review in �
 
 This skill is a review, not a rewrite. Keeping the phases separate is what makes the output auditable — a review that quietly turns into a patch leaves the user unable to tell what was found from what was changed.
 
-- **`[模式：评审]`** — the default, and the only mode to enter unprompted. Read code, query codegraph, run read-only verification. The only repo files to edit are the plan documents in step 8; implementation code stays untouched. Refreshing the codegraph index (`codegraph sync`, or an init the user approved) does not count as an edit — it updates a local index, not the repo's source.
-- **`[模式：修复]`** — requires the user to approve a specific list of 必须补齐 items. Implement exactly those, then re-verify.
+- **`[模式：评审]`** — the default, and the only mode to enter unprompted. Read code, query codegraph, run read-only verification. Edit **no** repo files at all — implementation code *and* plan documents both stay untouched. Findings that need to land in the plan go into the report's 计划更新建议 section as a concrete proposal, not into the file. Refreshing the codegraph index (`codegraph sync`, or an init the user approved) does not count as an edit — it updates a local index, not the repo's source.
+- **`[模式：修复]`** — requires the user to approve a specific list of 必须补齐 items *and* to choose how to handle the plan: **先同步计划再修复** (apply the 计划更新建议 to the plan document, then fix the code), **仅修复代码** (fix the code, leave the plan as written), or **仅更新计划** (apply the proposal, touch no code). Implement exactly what was chosen, then re-verify.
 
 Wanting to fix something mid-review — a broken caller, a type error, even a security hole — is the signal to finish the review and ask, not to start editing.
+
+**Pre-authorization.** The user may grant fix approval upfront, in the same message that requests the review ("评审完发现明确的问题直接修"). This moves the approval earlier; it does not weaken the discipline:
+
+- The complete review report still comes first. Findings must be on record before any edit, or the user can no longer tell what was found from what was changed.
+- It covers only 必须补齐 items that are **明确** — and 明确 is about the *source of the spec*, not the reviewer's confidence in the fix. A finding is 明确 when the correct behavior was already written down by the user:
+  - a plan step marked **未实现** → implement it as the plan describes;
+  - a plan step marked **偏离** → restore the code to what the plan says — *unless* the review found evidence that the plan as written is wrong or infeasible, in which case the item is really a plan question and waits for the user's ruling;
+  - a requirement the user **stated directly** (in this conversation, or in the request that produced the change).
+- Everything the review discovered on its own — a security hole, an off-diff caller the plan never mentioned, a quality or structure problem — is **not** 明确, however obvious the fix looks. Its spec exists only in the reviewer's head; writing it into code without a nod is the reviewer deciding requirements. These stay in the report and wait.
+- It **never** covers the plan document. 计划更新建议 always waits for the user's explicit 同步计划 choice — pre-authorized or not.
+- It never covers 暂不处理 items. "顺手修掉别的问题" stays scope creep even when pre-authorized fixing is on.
+
+In the report, mark which 必须补齐 items were fixed under pre-authorization and which are still waiting, so the boundary of what was touched stays visible.
 
 ## Checklist
 
@@ -49,7 +62,7 @@ A review built on what the conversation happens to mention will miss whatever wa
 
 This is the step that separates this skill from a generic code review: the code was written *for a plan*, so the plan is the review's spec.
 
-- Locate the plan per *Locating the plan* below. If no plan document exists, still review the diff — steps 3 through 7 do not need one — but record the gap in the report and propose writing a short plan doc, because findings need somewhere durable to live and 计划已更新 will otherwise have no target.
+- Locate the plan per *Locating the plan* below. If no plan document exists, still review the diff — steps 3 through 7 do not need one — but record the gap in the report and propose writing a short plan doc, because findings need somewhere durable to live and 计划更新建议 will otherwise have no target.
 - **Plan → code.** Mark each plan step 已实现 / 部分实现 / 未实现 / 偏离, with evidence. 偏离 means implemented differently than written; defensible or not, a silent deviation is a finding — the user decides whether the plan or the code is the truth. Do not silently rewrite either to match the other.
 - **Code → plan.** Every diff hunk that no plan step accounts for is 计划外改动. Sometimes it is a necessary discovery made mid-implementation and should be written back into the plan; sometimes it is scope creep and belongs in 暂不处理; and occasionally it is where the bug or the hole hides — unplanned code received zero review at planning time, by definition.
 - **Acceptance criteria are part of conformance.** A criterion the plan names but nobody ran — "非成员返回 403" with no test behind it — is 未实现 even when the happy-path code exists.
@@ -113,7 +126,7 @@ When flagging a structural problem, propose the named move — extract the helpe
 
 Route quality findings by consequence, not by axis: one that threatens the correctness, safety, or maintainability of *this* change (feature logic contaminating a shared module, an N+1 on a hot path, dead code shadowing live code) goes to 必须补齐 with a normal severity tag. Everything else — style, naming, simplifications, "consider" items — goes to 改进建议, explicitly non-blocking, and the user may ignore it freely. Mixing the two is how reviews train authors to skim past everything; and if there is one structural problem and ten nits, the structural problem *is* the review — a few high-conviction findings beat a long list.
 
-### 8. Classify, rank, and write findings back into the plan
+### 8. Classify, rank, and draft the plan update proposal
 
 Sort every finding into one of three buckets:
 
@@ -121,12 +134,14 @@ Sort every finding into one of three buckets:
 - **改进建议 (Suggestions)** — non-blocking quality items from step 7. The user may adopt or ignore them; they never gate the 结论 and never go into the plan unless the user asks.
 - **暂不处理 (Out Of Scope)** — adjacent or newly discovered problems, including untouched pre-existing vulnerabilities. Report them and wait for approval. They do not go into the plan. "先合了以后再清理" belongs here too, as a written item the user signs off — deferred cleanup that lives nowhere never happens.
 
-Then update the plan document, because findings that live only in chat vanish when the conversation moves on:
+Then draft the plan update as a *proposal* in the report's 计划更新建议 section — do **not** edit the plan document in 评审模式. The plan was already executed once; rewriting it mid-review destroys the record of what the implementation was actually built against, and the user may prefer to fix the code without touching the plan at all. That call is theirs. The proposal must still be concrete enough to apply verbatim once approved:
 
-- Insert every 必须补齐 item as a concrete step, preserving the plan's existing structure, ordering, and language, at the right stage (analysis / change / verification).
-- Mark inserted items so they trace back to this review — a short tag like `补充于评审` is enough.
-- 计划外改动 judged necessary gets written into the plan too, so the document catches up with reality; 计划外改动 judged as scope creep goes to 暂不处理 instead.
-- If no plan document exists, propose creating one before continuing; do not let findings live only in chat.
+- List every 必须补齐 item as the exact step it would become, matching the plan's existing structure, ordering, and language, placed at the right stage (analysis / change / verification).
+- Include the traceability tag the inserted steps would carry — a short tag like `补充于评审` is enough.
+- 计划外改动 judged necessary goes into the proposal too, so the document can catch up with reality if the user says yes; 计划外改动 judged as scope creep goes to 暂不处理 instead.
+- If no plan document exists, the proposal becomes "建议先补一份计划文档" plus the steps it should contain; do not create the file unprompted.
+
+Findings that live only in chat vanish when the conversation moves on — that is exactly why the proposal is spelled out in full in the report, ready to land the moment the user picks 先同步计划再修复 or 仅更新计划.
 
 ### 9. Verify with the narrowest check that produces evidence
 
@@ -143,9 +158,11 @@ If the project supplies domain conventions (a tech-stack or coding-standards ski
 
 ### 10. Report using the template below, then stop
 
-A failing check is a finding, not a detour: record it under 必须补齐 with the actual error output as evidence and let severity reflect it. Keep the report proportional to the change — a section with nothing to flag gets one line, not padding. 评审模式 ends here.
+A failing check is a finding, not a detour: record it under 必须补齐 with the actual error output as evidence and let severity reflect it. Keep the report proportional to the change — a section with nothing to flag gets one line, not padding. End the report by asking the user to choose: **先同步计划再修复 / 仅修复代码 / 仅更新计划**. 评审模式 ends here — no file has been written.
 
-**`[模式：修复]` only, after approval:** restate the approved 必须补齐 list (plus any 改进建议 the user explicitly adopted), implement exactly those items, re-run the step 9 verification, and report any remaining risk. Anything not on the approved list stays in 暂不处理.
+**With pre-authorization (see Two modes):** produce the same complete report first, then immediately fix the 明确 items — plan steps marked 未实现/偏离 and user-stated requirements — re-run the step 9 verification on them, and report which items were fixed and which still wait for a decision. The plan document remains untouched either way — the closing question narrows to whether to 同步计划 and how to handle the reviewer-discovered items.
+
+**`[模式：修复]` only, after the user chooses:** restate the approved 必须补齐 list (plus any 改进建议 the user explicitly adopted). If they chose 先同步计划再修复 or 仅更新计划, apply the 计划更新建议 to the plan document verbatim first; if 仅修复代码, leave the plan untouched. Then implement exactly the approved code items (none, for 仅更新计划), re-run the step 9 verification, and report any remaining risk. Anything not on the approved list stays in 暂不处理.
 
 ## Anti-patterns (red flags)
 
@@ -158,6 +175,10 @@ A failing check is a finding, not a detour: record it under 必须补齐 with th
 | "测试应该会覆盖" | Open the test file and verify. Acceptance criteria without a check behind them are 未实现. |
 | "type-check 挂了，我先修一下" | That is 修复模式 without approval. Record the error as a finding and ask. |
 | "代码和计划不一样，把计划改成和代码一致就行" | That launders a silent deviation into retroactive truth. Flag the deviation; the user decides which side is right. |
+| "评审完顺手把必修项写进计划文档" | Plan documents are repo files too, and this plan was already executed once. 评审模式 writes nothing; the proposal waits in 计划更新建议 until the user picks 同步计划 or 仅修复代码. |
+| "用户授权了直接修，那计划也顺手同步掉" | Pre-authorization covers unambiguous code fixes only. The plan document always waits for an explicit 同步计划 choice. |
+| "这个问题很明确，不用等批准了" | Without pre-authorization in the user's own message, every fix waits — 明确 controls what a granted authorization covers, it does not replace the authorization. |
+| "这个 bug 修法只有一种，够明确了吧" | 明确 looks at where the spec comes from (a plan step, the user's words), not at how obvious the fix is. A reviewer-discovered finding waits, however single-solution it looks. |
 | "这段代码计划里没写，但看着有用，就不提了" | Unplanned code received zero planning review — it is where bugs and holes hide. Name it as 计划外改动 and judge it. |
 | "内部接口/内网服务，不用做权限校验" | An assumption about deployment is not a trust boundary. Check the caller's right to the resource. |
 | "参数来自前端下拉框，值是固定的" | The client is never a trust boundary. Review what an attacker can send, not what the UI sends. |
@@ -172,7 +193,7 @@ A failing check is a finding, not a detour: record it under 必须补齐 with th
 
 ## Locating the plan
 
-When deciding which document to check conformance against and write findings back into:
+When deciding which document to check conformance against and target the 计划更新建议 at:
 
 1. A plan file the user explicitly pointed at this turn.
 2. A new or modified plan / RFC document on the current branch. Find where this repo actually keeps them — check `git diff --name-only` and `git status` against the repo's own convention (`docs/**/plans/**`, `rfcs/`, `.plans/`, or whatever exists) rather than assuming a fixed path.
@@ -190,14 +211,14 @@ When deciding which document to check conformance against and write findings bac
 
 计划符合度：
 - [步骤 N：一句话概括] : [已实现 / 部分实现 / 未实现 / 偏离（怎么偏的）] — 证据：[file:line 或测试结果]
-- 计划外改动：[hunk 概述 → 判定：应写回计划 / 属暂不处理]（无则写"无"）
+- 计划外改动：[hunk 概述 → 判定：建议写回计划（列入 计划更新建议）/ 属暂不处理]（无则写"无"）
 
 已核对范围：
 - [file or symbol] : [codegraph_context / codegraph_callers / Read / Grep / 运行测试]
 - [...] : [...]
 （相邻但未覆盖的面也要诚实列出，写"未核对"）
 
-必须补齐：（按严重度排序，安全项加 [安全] 标记）
+必须补齐：（按严重度排序，安全项加 [安全] 标记；提前授权下已修复的项加 [已修·提前授权] 标记）
 - [阻塞][安全] [finding] — 证据：[file:line 或 codegraph 结果摘要]
 - [重要] [finding] — 证据：[...]
 
@@ -219,11 +240,11 @@ When deciding which document to check conformance against and write findings bac
 已执行验证：
 - [command 或验收核对动作] → [结果]
 
-计划已更新：
-- [plan file path] → [新增/修改的步骤摘要]（若无计划文件则写明"无现有计划，建议先建立"）
+计划更新建议：（仅提案，评审阶段不改动计划文件，待用户确认后执行）
+- [plan file path] → [拟新增/修改的具体步骤，含 `补充于评审` 标记]（若无计划文件则写明"无现有计划，建议先补一份"及应包含的步骤）
 
 下一步：
-- [focused action or confirmation request]
+- 请选择处理方式：A) 先同步计划再修复 B) 仅修复代码（计划保持原样） C) 仅更新计划（暂不改代码）
 ```
 
-If nothing is wrong, write `结论：可以合并` and drop 必须补齐 / 改进建议 / 暂不处理 / 计划已更新 — but keep 计划符合度、已核对范围、安全评审 and 已执行验证. "No issues" without evidence is rubber-stamping, not review. 改进建议 alone never changes the 结论: a change with only suggestions attached is still 可以合并.
+If nothing is wrong, write `结论：可以合并` and drop 必须补齐 / 改进建议 / 暂不处理 / 计划更新建议 — but keep 计划符合度、已核对范围、安全评审 and 已执行验证. "No issues" without evidence is rubber-stamping, not review. 改进建议 alone never changes the 结论: a change with only suggestions attached is still 可以合并.
