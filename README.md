@@ -4,66 +4,73 @@
 
 ## 技能列表
 
-### 1. Master Architect Workflow
+| 技能 | 目录 | 版本 | 用途 |
+|---|---|---|---|
+| Master Architect Workflow | `master-architect-workflow/` | — | 全栈架构师工作流，按任务复杂度自动路由简单/标准/完整三条路径 |
+| Full Stack Expert | `fullstack-expert/` | — | 多技术栈全栈开发（React 19 / Vue 3 + FastAPI / Fastify） |
+| Fullstack Test Automation | `fullstack-test-automation/` | — | 写测试 → 运行 → 调试 → 修复的全场景测试自动化 |
+| Plan And Diff Review | `plan-and-diff-review/` | 1.0.0 | 只评审当前这一个方案或 diff，反范围蔓延，必修项写回计划文档 |
 
-**路径**: `master-architect-workflow-skill/`  
-**描述**: 实现严格工程化流程的全栈架构师工作流，包含研究 → 构思 → 计划 → 执行 → 评审五个阶段  
-**适用场景**: 复杂的全栈开发项目、系统架构设计、技术债务重构  
-**语言**: 简体中文
-
-**安装方式**:
-
-```bash
-openskills install https://github.com/chisdy/ai-skills-collection/tree/main/master-architect-workflow-skill
-```
-
-### 2. React & FastAPI Full Stack Expert
-
-**路径**: `react-python-fullstack-skill/`  
-**描述**: 专业的 React 前端与 FastAPI 后端全栈开发专家，专注于高性能、类型安全和现代化工程实践  
-**适用场景**: React + FastAPI 全栈项目、高性能异步 API 设计、前后端数据模型同步、自动 API 文档生成  
-**语言**: 简体中文
-
-**核心特色**:
-
-- 高性能异步：FastAPI 原生异步支持，SQLAlchemy 2.0 异步 ORM
-- 类型同步：Pydantic 模型与 TypeScript 接口完美对齐
-- 自动文档：FastAPI 自动生成 OpenAPI 文档和交互式 API 界面
-- 现代前端：TanStack Query + Zustand 的现代状态管理
-
-**安装方式**:
+安装（把目录名替换成上表中的任一个）：
 
 ```bash
-openskills install https://github.com/chisdy/ai-skills-collection/tree/main/react-python-fullstack-skill
+openskills install https://github.com/chisdy/ai-skills-collection/tree/main/plan-and-diff-review
 ```
 
-## 使用说明
+### Master Architect Workflow
 
-每个技能都遵循 OpenSkills 标准格式：
+严格工程化流程的架构师工作流。收到任务先做复杂度评估并告知用户选择了哪条路径，避免小任务走冗长流程、大任务漏关键环节。内置意图澄清与方案对比机制。
 
-- `SKILL.md` - 主技能文件，包含 YAML frontmatter 和 Markdown 指令
-- `references/` - 参考文档和详细指南
-- `scripts/` - 可执行脚本（如需要）
-- `assets/` - 模板和资源文件（如需要）
+### Full Stack Expert
+
+前端支持 React 19 或 Vue 3.5+，后端支持 FastAPI（Python）或 Fastify（Node.js），统一 Vite 8 + Tailwind CSS V4 + pnpm。覆盖脚手架、前后端类型同步、状态管理选型、UI 与图标库选型。详细模式见 `references/`。
+
+### Fullstack Test Automation
+
+覆盖 Vitest + React Testing Library / Vue Test Utils、pytest + httpx、supertest 与 Playwright，从补测试、TDD 新功能、调试失败用例到提升覆盖率。
+
+### Plan And Diff Review
+
+只评审当前这一个方案或 diff：借 codegraph 映射受影响面（调用方、契约变更的下游），检查缺失逻辑与业务同步缺口，把必修项按严重度写回活跃的计划文档，并把新发现的无关问题隔离到"暂不处理"等待确认。默认只读，进入修复需用户批准具体条目。
+
+名字里计划在前是有意的：评审尚未实施的方案时，发现的每个问题改起来都是零成本，所以纯方案输入是主场而非降级用法。
+
+该技能默认不由模型自动触发（`disable-model-invocation: true`），需显式调用。
+
+## 技能格式
+
+每个技能遵循 Agent Skills 规范：
+
+- `SKILL.md` — 主技能文件，YAML frontmatter（必填 `name` / `description`）+ Markdown 指令
+- `references/` — 按需加载的参考文档
+- `scripts/` — 可执行脚本（如需要）
+- `assets/` — 模板和资源文件（如需要）
+- `evals/` — 测试提示与断言
+- `CHANGELOG.md` — 版本记录（如该技能已启用版本号）
+
+版本号写在 frontmatter 的 `metadata.version`（规范不支持顶层 `version` 字段），值为字符串。目前只有 `plan-and-diff-review` 启用了版本号，其余三个待统一。
+
+`workspaces/` 是 skill 评估的运行产物目录，已被 gitignore。
 
 ## 贡献指南
 
-1. 每个新技能应创建独立的子目录
-2. 遵循 OpenSkills 标准格式
-3. 提供清晰的使用说明和示例
-4. 包含适当的参考文档
+1. 每个新技能创建独立子目录，目录名必须与 frontmatter 的 `name` 完全一致
+2. 遵循 Agent Skills 规范格式
+3. `SKILL.md` 控制在 500 行内，详细内容下沉到 `references/`
+4. 提供 `evals/evals.json` 便于回归验证
 
 ## 技能开发计划
 
-- [x] Master Architect Workflow - 全栈架构师工作流
-- [x] React & FastAPI Full Stack Expert - React + FastAPI 全栈开发专家
+- [x] Master Architect Workflow — 全栈架构师工作流
+- [x] Full Stack Expert — 多技术栈全栈开发专家
+- [x] Fullstack Test Automation — 全栈自动化测试
+- [x] Plan And Diff Review — 方案与 diff 的聚焦式评审
 - [ ] 数据库设计专家技能
 - [ ] API 设计最佳实践技能
 - [ ] 性能优化专家技能
 - [ ] 安全审计专家技能
 - [ ] DevOps 自动化技能
-- [ ] 前端架构设计技能
 
 ## 许可证
 
-MIT License - 详见各技能目录中的许可证文件
+MIT License
