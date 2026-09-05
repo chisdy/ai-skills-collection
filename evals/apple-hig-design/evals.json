@@ -1,0 +1,109 @@
+{
+  "skill_name": "apple-hig-design",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "ios-main-screen-design",
+      "prompt": "我在做一个 iOS 记账 app，用 SwiftUI。帮我写主界面：底部有账单、统计、预算、我的 四个区域，账单页是按天分组的交易列表，右上角有个加号新建。要好看，像系统自带的 app 那样。",
+      "expected_output": "先说明平台约束与结构决策（TabView 承载四个顶层区域、NavigationStack + List 分组、Toolbar 放新建），再给代码；使用系统组件与 text style，不自绘 Tab Bar 或玻璃卡片，最后列出无障碍处理与需实机验证的配置。",
+      "assertions": [
+        {
+          "name": "states_platform_constraints_first",
+          "description": "回复开头先写出 iOS 平台约束或结构决策，再给代码，而不是直接输出代码"
+        },
+        {
+          "name": "uses_native_tabview",
+          "description": "主导航使用系统 TabView，没有自绘 Tab Bar"
+        },
+        {
+          "name": "uses_list_and_toolbar",
+          "description": "交易列表使用 List 分组（Section），新建按钮放在 toolbar 中并使用 SF Symbol（如 plus）"
+        },
+        {
+          "name": "uses_text_styles_not_fixed_sizes",
+          "description": "文本使用系统 text style（.body/.headline 等）或语义字体，而不是大量固定字号"
+        },
+        {
+          "name": "no_glass_on_content",
+          "description": "没有对列表行、卡片或内容背景使用 glassEffect / 自定义玻璃材质"
+        },
+        {
+          "name": "accessibility_addressed",
+          "description": "提到并处理了 Dynamic Type、VoiceOver 标签或触控目标至少两项"
+        },
+        {
+          "name": "lists_verification_configs",
+          "description": "列出了需要实机验证的配置（如最大字号、深色模式、Reduce Motion）"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "iphone-to-mac-port-review",
+      "prompt": "下面是我 Mac app 的 SwiftUI 代码，是从 iPhone 版直接编译过来的，同事说\"一点也不像 Mac app\"。帮我看看到底哪里不对。\n\n```swift\nstruct ContentView: View {\n    @State private var selection = 0\n    var body: some View {\n        TabView(selection: $selection) {\n            NotesList().tabItem { Label(\"Notes\", systemImage: \"note.text\") }.tag(0)\n            TagsView().tabItem { Label(\"Tags\", systemImage: \"tag\") }.tag(1)\n            SettingsView().tabItem { Label(\"Settings\", systemImage: \"gear\") }.tag(2)\n        }\n    }\n}\n\nstruct NotesList: View {\n    @State private var notes: [Note] = []\n    var body: some View {\n        NavigationStack {\n            List(notes) { note in\n                NavigationLink(note.title) { NoteDetail(note: note) }\n            }\n            .navigationTitle(\"Notes\")\n            .safeAreaInset(edge: .bottom) {\n                Button(action: addNote) {\n                    Text(\"New Note\").font(.system(size: 17, weight: .semibold))\n                        .frame(maxWidth: .infinity).padding().background(.blue).foregroundColor(.white).cornerRadius(12)\n                }.padding()\n            }\n        }\n    }\n    func addNote() {}\n}\n```",
+      "expected_output": "按审查模板输出：范围、总体判断、阻塞/重要/建议分级、通过项、需实机验证。关键发现：Mac 应用 Sidebar（NavigationSplitView）而非底部 Tab；设置应为 Settings 场景（⌘,）而非 Tab；不要在窗口底部放全宽主按钮，新建应进 Toolbar 与菜单栏并配 ⌘N 快捷键；固定 17pt 字号与手写按钮样式应换为系统样式；缺少键盘快捷键与菜单栏命令。不主动重写代码。",
+      "assertions": [
+        {
+          "name": "uses_review_report_structure",
+          "description": "输出包含审查范围、按严重度分级（阻塞/重要/建议）的发现，以及需实机验证清单"
+        },
+        {
+          "name": "flags_tabview_should_be_sidebar",
+          "description": "指出 Mac 上应使用 Sidebar / NavigationSplitView 承载顶层导航而非 TabView"
+        },
+        {
+          "name": "flags_settings_scene",
+          "description": "指出 macOS 设置应通过 Settings 场景（⌘,）提供，而不是作为一个 Tab"
+        },
+        {
+          "name": "flags_bottom_button",
+          "description": "指出不应把主操作按钮放在窗口底部，且全宽自绘按钮应改为 Toolbar 项与系统按钮样式"
+        },
+        {
+          "name": "flags_missing_menu_and_shortcuts",
+          "description": "指出缺少菜单栏命令与键盘快捷键（如 ⌘N 新建）"
+        },
+        {
+          "name": "gives_hig_rationale_and_fix",
+          "description": "每个主要发现都给出为什么（用户会怎样困惑）和具体修法，而不只是说不符合规范"
+        },
+        {
+          "name": "does_not_rewrite_unasked",
+          "description": "没有主动重写整份代码；只在说明修法时给出片段"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "weather-widget-design",
+      "prompt": "给我的天气 app 加一个主屏幕 widget。我想显示当前温度、今天高低温、未来 6 小时逐小时天气，还想放一个刷新按钮和一个切换城市的按钮，再放个 app logo。用 WidgetKit + SwiftUI。",
+      "expected_output": "先基于 HIG 对需求做取舍：widget 要可瞥视，去掉 logo，刷新按钮不必要（时间线自动刷新），切换城市改为 AppIntentConfiguration 配置项；小尺寸只放温度与高低温，中尺寸再加逐小时；用 widgetURL 深链到城市详情；在 full color / tinted / clear 三种外观下测试；然后给代码。",
+      "assertions": [
+        {
+          "name": "pushes_back_on_logo_and_refresh",
+          "description": "建议去掉 app logo 与刷新按钮，并说明理由（widget 应可瞥视、时间线自动刷新）"
+        },
+        {
+          "name": "city_switch_via_configuration",
+          "description": "把切换城市改为 widget 配置（AppIntentConfiguration / 编辑 widget）而不是 widget 内按钮"
+        },
+        {
+          "name": "adapts_content_to_family",
+          "description": "按 widget 尺寸（systemSmall / systemMedium 等）分配信息密度，小尺寸不塞逐小时预报"
+        },
+        {
+          "name": "uses_deep_link",
+          "description": "使用 widgetURL 或 Link 深链到 app 中对应城市/详情"
+        },
+        {
+          "name": "mentions_appearance_modes",
+          "description": "提到在全彩、tinted、clear 外观模式下的适配或测试"
+        },
+        {
+          "name": "provides_widgetkit_code",
+          "description": "给出包含 TimelineProvider / TimelineEntry 与 SwiftUI 视图的可用 WidgetKit 代码"
+        }
+      ]
+    }
+  ]
+}
