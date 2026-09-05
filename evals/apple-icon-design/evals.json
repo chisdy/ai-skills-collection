@@ -1,0 +1,137 @@
+{
+  "skill_name": "apple-icon-design",
+  "fixture": "fixture-repo（二进制素材先运行 python3 make_fixture.py 生成）",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "app-icon-rejection-review",
+      "prompt": "我们的票务 app 上传 App Store Connect 时被拒了，邮件里说 ITMS-90717 Invalid App Store Icon。图标在 Assets.xcassets/AppIcon.appiconset，设计师说她是按 Figma 模板导出的没问题。另外我们在试着迁到 Icon Composer，做了个 AppIcon.icon 但一直打不开。帮我看看这两个到底哪里有问题、怎么改，顺便看看这个图标在 iOS 26 的深色和着色模式下会不会有问题。",
+      "expected_output": "运行 check_app_icon.py（或等价检查）拿证据后按审查模板输出分级报告。阻塞：1024 图四角透明 / 含 alpha（预切圆角 + 烘入阴影）导致 ITMS-90717；AppIcon.icon 打不开的具体原因（supported-platforms 的 squares 含 watchOS、linear-gradient 三色、shadow 缺 opacity、两个引用的 SVG 不存在）。重要：macOS 缺 4 个 @2x 槽位；素材烘入阴影 / 高光、细线与 'TICKETS' 文字在小尺寸与单色模式下不可读；未提供 dark / tinted 变体；5 个 group 超过建议、JPG 与 512px PNG 图层。给出具体修法（去圆角与 alpha、重新分层、修正 icon.json）并列出需实机验证项。",
+      "files": [
+        "Assets.xcassets/AppIcon.appiconset",
+        "AppIcon.icon"
+      ],
+      "assertions": [
+        {
+          "name": "identifies_alpha_prerounded_cause",
+          "description": "指出 1024 图的根因是预切圆角 / 四角透明或含 alpha 通道，并说明系统会自行施加圆角蒙版，因此素材应为满幅不透明方形"
+        },
+        {
+          "name": "explains_icon_json_open_failure",
+          "description": "至少指出 AppIcon.icon 打不开的两个具体原因：supported-platforms.squares 含 watchOS、linear-gradient 有 3 个颜色、shadow 缺 opacity"
+        },
+        {
+          "name": "flags_missing_assets_in_icon",
+          "description": "指出 icon.json 引用的 wordmark.svg / badge.svg 在 Assets/ 中不存在"
+        },
+        {
+          "name": "flags_macos_missing_slots",
+          "description": "指出 macOS 缺少 @2x 尺寸槽位（16/128/256/512 @2x），macOS 需要全部 10 张"
+        },
+        {
+          "name": "flags_baked_effects_and_text",
+          "description": "指出素材里烘入的阴影 / 高光和 'TICKETS' 文字或细线不适合 Liquid Glass 与小尺寸，建议去掉并重新分层"
+        },
+        {
+          "name": "addresses_dark_and_tinted",
+          "description": "说明未提供 dark / tinted 变体的后果（系统自动生成偏灰），并给出方案：Icon Composer 显式调 Mono / 提供透明背景深色变体与灰度着色变体"
+        },
+        {
+          "name": "uses_severity_report_structure",
+          "description": "输出按阻塞 / 重要 / 建议分级，每条含现状、原因与修法，并有需实机验证清单"
+        },
+        {
+          "name": "ran_or_cited_checks",
+          "description": "实际运行了检测脚本或等价的程序化检查（如读取 PNG alpha、解析 icon.json），并引用其输出作为证据，而不是只凭肉眼描述"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "menubar-extra-icon-and-code",
+      "prompt": "Tickets 的 Mac 伴侣 app 只是一个菜单栏小工具，显示下一场演出倒计时，有提醒时图标要变红。现在的图标在 Assets.xcassets/MenuBarIcon.imageset，代码在 Sources/TicketApp/StatusBarController.swift。同事说在深色菜单栏下图标是一个蓝色方块，很难看。帮我把图标和这段代码按 Apple 的规范重做一遍，最低 macOS 13。",
+      "expected_output": "指出现有问题：24pt 高超过 22pt 工作区、不透明彩色位图不是模板图、只有 @1x、用颜色表达状态、点击弹 popover、MenuBarIcon-Red 不存在、无 accessibility 描述。给出新方案：16–18pt 单色模板图（PDF/SVG 或 @1x+@2x PNG，Contents.json 设 template-rendering-intent）或直接用 SF Symbol；用符号变体 / badge 表达提醒而非红色；改为菜单（NSMenu 或 SwiftUI MenuBarExtra .menu 样式）；提供设置开关让用户隐藏；补 accessibilityDescription / toolTip；给出完整代码；建议用 check_template_images.py 验证。",
+      "files": [
+        "Assets.xcassets/MenuBarIcon.imageset",
+        "Sources/TicketApp/StatusBarController.swift"
+      ],
+      "assertions": [
+        {
+          "name": "explains_blue_square_root_cause",
+          "description": "解释深色菜单栏下出现蓝色方块的原因：素材整张不透明且不是模板图，系统无法按 alpha 上色"
+        },
+        {
+          "name": "specifies_template_and_size",
+          "description": "新图标为单色模板图（isTemplate / template-rendering-intent），高度不超过 22pt，图形约 16–18pt，并提供 @1x @2x 或矢量"
+        },
+        {
+          "name": "state_via_shape_not_color",
+          "description": "提醒状态用符号变体 / badge / 不透明度等形状差异表达，而不是把图标改成红色"
+        },
+        {
+          "name": "menu_instead_of_popover",
+          "description": "把点击行为改为显示菜单（NSMenu 或 MenuBarExtra 的 .menu 样式），或明确说明为何保留窗口并遵循 HIG 例外条件"
+        },
+        {
+          "name": "user_can_hide_and_fallback",
+          "description": "提供让用户在设置里隐藏菜单栏图标的开关（如 MenuBarExtra(isInserted:)）并提到被隐藏时的其它入口"
+        },
+        {
+          "name": "accessibility_description_present",
+          "description": "代码为菜单栏图标设置了 accessibilityDescription / accessibilityLabel 或 toolTip，且随状态更新"
+        },
+        {
+          "name": "provides_complete_code",
+          "description": "给出可编译的完整 SwiftUI MenuBarExtra 或 AppKit NSStatusItem 代码，兼容 macOS 13"
+        },
+        {
+          "name": "flags_missing_red_asset",
+          "description": "指出代码引用的 MenuBarIcon-Red 资源不存在于资产目录"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "sf-symbols-usage-audit",
+      "prompt": "帮我检查一下 Sources/TicketApp 里 SF Symbols 的用法有没有问题。我们最低支持 iOS 16，测试反馈有的机型上 tab 图标和 toolbar 按钮是空白的，而且列表里的票图标看起来比文字粗很多。顺手把不合规范的地方都改掉。",
+      "expected_output": "运行 check_symbols.py --min-ios 16.0（或等价核对）后修改代码：wallet.bifold 需要 iOS 18，用 #available 分支或换 wallet.pass / creditcard；tray.and.arrow.down.badge.clock 不存在，换成有效符号；creditcard.and.123 改为 creditcard.and.numbers；ticket.fill 的 .resizable().frame 改为 .font / .imageScale；qrcode.viewfinder 的固定 .font(.system(size: 22)) 改为 text style；share 按钮的 square.and.arrow.up.circle.fill 改为无边框 square.and.arrow.up（Toolbar 用无边框 outline）；为仅图标按钮加 accessibilityLabel 或改用 Label；说明 Tab Bar 会自动用 fill 变体，tabItem 里不必写 gearshape.fill。",
+      "files": [
+        "Sources/TicketApp"
+      ],
+      "assertions": [
+        {
+          "name": "fixes_unavailable_symbol",
+          "description": "识别 wallet.bifold 需要 iOS 18+ 并用 #available 分支或替换为 iOS 16 可用符号"
+        },
+        {
+          "name": "fixes_invalid_symbol_name",
+          "description": "识别 tray.and.arrow.down.badge.clock 不是有效符号名并替换为存在的符号"
+        },
+        {
+          "name": "handles_legacy_alias_with_availability",
+          "description": "识别 creditcard.and.123 是旧名称（当前名 creditcard.and.numbers），并正确处理版本：新名需要 iOS 26+，在 iOS 16 部署目标下应保留旧名（或加 #available 分支）并说明原因，而不是盲目改名，也不是当作没问题略过"
+        },
+        {
+          "name": "removes_resizable_frame",
+          "description": "把 ticket.fill 上的 .resizable().frame(...) 改为 .font / .imageScale / SymbolConfiguration 方式控制大小，并解释这样才与文字权重一致且随 Dynamic Type"
+        },
+        {
+          "name": "replaces_fixed_font_size",
+          "description": "把 .font(.system(size: 22)) 改为 text style（如 .title2）或 @ScaledMetric"
+        },
+        {
+          "name": "toolbar_uses_borderless_symbol",
+          "description": "把 Toolbar 里的 square.and.arrow.up.circle.fill 改为无边框的 square.and.arrow.up，并说明 Toolbar 应使用无边框 outline 变体"
+        },
+        {
+          "name": "adds_accessibility_labels",
+          "description": "为仅图标的 Toolbar 按钮添加 accessibilityLabel 或改用 Label"
+        },
+        {
+          "name": "verified_with_metadata_or_script",
+          "description": "通过运行 check_symbols.py 或核对系统符号元数据 / SF Symbols 可用性来验证结论，而不是凭记忆判断符号是否存在"
+        }
+      ]
+    }
+  ]
+}

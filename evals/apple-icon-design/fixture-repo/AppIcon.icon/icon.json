@@ -1,0 +1,70 @@
+{
+  "fill": {
+    "linear-gradient": [
+      "extended-srgb:0.15,0.47,0.90,1",
+      "extended-srgb:0.35,0.20,0.80,1",
+      "extended-srgb:0.90,0.30,0.40,1"
+    ]
+  },
+  "features": [
+    "specular-location"
+  ],
+  "supported-platforms": {
+    "squares": [
+      "iOS",
+      "macOS",
+      "watchOS"
+    ]
+  },
+  "groups": [
+    {
+      "name": "Background",
+      "layers": [
+        {
+          "name": "bg",
+          "image-name": "bg.jpg"
+        }
+      ]
+    },
+    {
+      "name": "Ticket",
+      "shadow": {
+        "kind": "chromatic"
+      },
+      "layers": [
+        {
+          "name": "ticket",
+          "image-name": "ticket.png"
+        }
+      ]
+    },
+    {
+      "name": "Lines",
+      "lighting": "individual",
+      "layers": [
+        {
+          "name": "lines",
+          "image-name": "lines.svg"
+        }
+      ]
+    },
+    {
+      "name": "Text",
+      "layers": [
+        {
+          "name": "wordmark",
+          "image-name": "wordmark.svg"
+        }
+      ]
+    },
+    {
+      "name": "Badge",
+      "layers": [
+        {
+          "name": "badge",
+          "image-name": "badge.svg"
+        }
+      ]
+    }
+  ]
+}
