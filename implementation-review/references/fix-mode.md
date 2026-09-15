@@ -18,13 +18,14 @@ The user may grant fix approval upfront, in the same message that requests the r
 - It **never** covers the plan document. 计划更新建议 always waits for the user's explicit 同步计划 choice — pre-authorized or not.
 - It never covers 暂不处理 items. "顺手修掉别的问题" stays scope creep even when pre-authorized fixing is on.
 
-**Execution under pre-authorization:** produce the same complete report first, then immediately fix the 明确 items, re-run the checklist step 9 verification on them, and report which items were fixed and which still wait for a decision. In the report, tag fixed items `[已修·提前授权]` so the boundary of what was touched stays visible. Any plan document remains untouched either way; the closing question narrows to the reviewer-discovered items (plus, under 计划基准, whether to 同步计划).
+**Execution under pre-authorization:** produce the same complete report first, then immediately fix the 明确 items, re-run the checklist step 10 verification on them, and report which items were fixed and which still wait for a decision. In the report, tag fixed items `[已修·提前授权]` so the boundary of what was touched stays visible. Any plan document remains untouched either way; the closing question narrows to the reviewer-discovered items (plus, under 计划基准, whether to 同步计划).
 
 ## `[模式：修复]` execution, after the user chooses
 
 - Restate the approved 必须补齐 list (plus any 改进建议 the user explicitly adopted). When the user replied with report numbers ("修复 3.1、3.3"), expand each number back into the finding it names — resolved against *this* report's numbering — one line each, so both sides see the same list before any edit and a mis-typed number cannot silently authorize the wrong fix.
 - Under 计划基准, resolve the plan-document choice first per `plan-baseline.md` (A / B / C); with no plan document, there is nothing to sync and the approval is simply which items to fix.
-- Implement exactly the approved items (none, for 仅更新计划), re-run the checklist step 9 verification, and report any remaining risk. Anything not on the approved list stays in 暂不处理.
+- Implement exactly the approved items (none, for 仅更新计划), re-run the checklist step 10 verification, and report any remaining risk. Anything not on the approved list stays in 暂不处理.
+- A formatting item the user approved is the one place a formatter's writing mode (`ruff format`, `prettier --write`, `gofmt -w`, `cargo fmt`) is allowed — scoped to the files in the change set, using the project's own configuration, never a loaded skill's defaults. Formatting files outside the change set is scope creep even here.
 
 ## Anti-patterns
 

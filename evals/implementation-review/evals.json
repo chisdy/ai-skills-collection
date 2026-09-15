@@ -12,6 +12,7 @@
       "expected_output": "从 git diff 取变更集；逐步核对计划符合度：步骤 2 偏离（只算了 count_active_members，没把 pending 邀请计入，可被未接受邀请绕过上限）、步骤 4 前端提示未实现、步骤 5 测试未实现；通过 codegraph/grep 找出 diff 外的 bulk_invite 调用方——rejected dict 没有 invitation_id，import_invites_from_csv 会 KeyError；必修项按严重度整理进 计划更新建议 栏（不直接改计划文件）；不修改任何代码或计划文档；结尾让用户选择 先同步计划再修复 / 仅修复代码 / 仅更新计划。",
       "assertions": [
         "运行了 git status 或 git diff 来确定变更集，而不是只依据对话",
+        "报告头部包含 语言栈 行：从变更集识别出 Python（仅此一种——overlay 只改了 app/ 下的 .py 文件，不得因仓库里有 web/ 而误报 TypeScript），并列出已加载的语言专项技能，或如实写明未找到",
         "输出包含 计划符合度 小节，逐步骤标注 已实现/部分实现/未实现/偏离",
         "指出步骤 2 偏离：只统计了活跃成员，pending 邀请未计入上限，可被绕过",
         "指出步骤 4（前端提示）和步骤 5（测试）未实现",
@@ -51,7 +52,9 @@
         "保留了 安全评审 小节并如实写明未发现（或仅列低severity项）",
         "尽管用户授权顺手修，仍未修改任何与本计划无关的代码，新发现问题归入 暂不处理",
         "质量类意见（如有）放在 改进建议 且未因此改变 可以合并 的结论",
-        "运行了至少一项验证（测试或类型检查）并在 已执行验证 中记录结果"
+        "运行了至少一项验证（测试或类型检查）并在 已执行验证 中记录结果",
+        "报告头部包含 语言栈 行：从变更集识别出 Python 与 TypeScript 两种语言（overlay 同时改了 app/ 与 web/src/），并分别列出已加载的语言专项技能或如实写明未找到",
+        "lint / format 检查只以 check-only 模式运行，没有执行 --fix / --write / -w 等写模式"
       ],
       "files": ["docs/plans/invite-failure-reason.md"]
     },

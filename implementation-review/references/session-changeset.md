@@ -17,7 +17,7 @@ Check whether the session's own commits identify a diff base: `git log` around t
 This source carries two limits; state both explicitly in the 变更集 line and 已核对范围:
 
 1. It cannot prove nothing *else* changed — no repository-wide record exists.
-2. There is no before-image — the old contract that off-diff callers may still assume must be recovered from callers, tests, and the plan (checklist step 3) instead of read off a diff.
+2. There is no before-image — the old contract that off-diff callers may still assume must be recovered from callers, tests, and the plan (checklist step 4) instead of read off a diff.
 
 Report header form:
 

@@ -10,7 +10,7 @@
 | Full Stack Expert | `fullstack-expert/` | — | 多技术栈全栈开发（React 19 / Vue 3 + FastAPI / Fastify） |
 | Fullstack Test Automation | `fullstack-test-automation/` | — | 写测试 → 运行 → 调试 → 修复的全场景测试自动化 |
 | Plan Review | `plan-review/` | 1.0.0 | 写码前评审一份计划：前提核对、问题链隔离、可执行性审计，必修项写回计划文档 |
-| Implementation Review | `implementation-review/` | 1.1.0 | 写码后评审按计划实现的 diff：计划符合度、链外调用方、业务同步、安全评审、代码质量 |
+| Implementation Review | `implementation-review/` | 2.1.0 | 写码后评审按计划（或直接需求）实现的 diff：计划符合度、链外调用方、业务同步、安全评审、代码质量；自动识别语言栈并招募已安装的语言专项评审 / 格式技能 |
 | Plan And Diff Review | `plan-and-diff-review/` | 1.0.0 | （已拆分为上面两个技能，保留作兼容）方案或 diff 的聚焦式评审 |
 | Apple HIG Design | `apple-hig-design/` | 1.0.0 | 按 Apple Human Interface Guidelines 设计、实现与审查 iOS / iPadOS / macOS / watchOS / tvOS / visionOS 界面，含 Liquid Glass、Dynamic Type、Widgets |
 | Apple Icon Design | `apple-icon-design/` | 1.0.0 | Apple 平台三类图标（App Icon / 界面图标 / 状态栏与菜单栏图标）的设计规范、Xcode 与 Icon Composer 接入，附四个检测脚本（.icon / .appiconset 校验、六种外观渲染与小尺寸预览、SF Symbols 用法审计、模板图检查） |

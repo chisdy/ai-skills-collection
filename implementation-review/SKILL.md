@@ -1,9 +1,9 @@
 ---
 name: implementation-review
-description: Post-implementation code review against the change's own baseline — a plan document when one exists, or the user's stated requirement when none does. Audits baseline-to-code conformance in both directions, maps off-diff callers and business sync sites with codegraph, runs a security review over the changed attack surface, and reviews code quality with blocking findings separated from non-blocking suggestions. Establishes the change set from git diff, falling back to the session's edit record when git has nothing usable. Review-only by default — code and plan documents are modified only after explicit user approval. Use only when explicitly requested.
+description: Post-implementation code review against the change's own baseline — a plan document when one exists, or the user's stated requirement when none does. Audits baseline-to-code conformance in both directions, maps off-diff callers and business sync sites with codegraph, runs a security review over the changed attack surface, and reviews code quality with blocking findings separated from non-blocking suggestions. Detects the change set's language stack and recruits already-installed language-specific review / style / formatting skills (and the project's own lint config) as supplementary checklists. Establishes the change set from git diff, falling back to the session's edit record when git has nothing usable. Review-only by default — code and plan documents are modified only after explicit user approval. Use only when explicitly requested.
 disable-model-invocation: true
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   author: chisdy
 ---
 
@@ -16,7 +16,7 @@ Review the change set produced by implementing one request — established from 
 1. **Conformance** — hold the review baseline in one hand and the change in the other: do they match? The baseline is the plan document when one exists, or the user's stated requirement when none does (see *Establishing the baseline*). Every baseline item lands as 已实现 / 部分实现 / 未实现 / 偏离, and every diff hunk traces back to an item — or gets named as unplanned.
 2. **Correctness** — is the code right beyond what the diff shows: logic and edge cases, off-diff callers that still assume the old contract, business-layer sync sites that never got the memo?
 3. **Safety** — does the change open a security hole on the surface it adds or touches?
-4. **Quality** — is the code worth merging as written: readable, structured to fit the system, free of complexity that a named restructuring would remove?
+4. **Quality** — is the code worth merging as written: readable, idiomatic for its language and framework, structured to fit the system, free of complexity that a named restructuring would remove?
 
 **The approval standard:** approve a change when it definitely improves overall code health, even if it is not perfect. Perfect code does not exist; the goal is continuous improvement. "Not how I would have written it" is a preference, not a finding — blocking on it teaches authors to ignore reviews. This is why quality findings are split into blocking and non-blocking below.
 
@@ -32,7 +32,8 @@ Branch-specific machinery lives in `references/` (relative to this skill's direc
 
 | File | Read when |
 |---|---|
-| `references/plan-baseline.md` | The baseline is a plan document (计划基准) — read during step 2, before auditing conformance. |
+| `references/language-skills.md` | The change set contains source code — read during step 2 to detect the language stack and find installed language-specific skills. Fires on nearly every review; skip only for pure docs / config changes. |
+| `references/plan-baseline.md` | The baseline is a plan document (计划基准) — read during step 3, before auditing conformance. |
 | `references/fix-mode.md` | The user pre-authorized fixes in the review request, or approves fixes after the report — always read **before** editing any repo file. |
 | `references/session-changeset.md` | Git cannot produce a usable diff, so the change set must come from the session's edit record — read during step 1. |
 | `references/codegraph-recovery.md` | `codegraph_status` fails — read before rebuilding or re-indexing anything. |
@@ -56,7 +57,7 @@ A review built on what the conversation happens to *mention* will miss whatever 
 
 **Primary — git diff (来源：git diff):**
 
-- `git status` and `git diff` for uncommitted work; `git diff <base>...HEAD` when the change spans a branch. Extract the changed files, hunks, and symbol names — steps 2 and 3 need that list as input, and it goes into the 变更集 line so the user can confirm you reviewed the right thing.
+- `git status` and `git diff` for uncommitted work; `git diff <base>...HEAD` when the change spans a branch. Extract the changed files, hunks, and symbol names — steps 2, 3 and 4 need that list as input, and it goes into the 变更集 line so the user can confirm you reviewed the right thing.
 - If the working tree mixes this task's edits with unrelated pre-existing modifications, use the session's edit record to scope which changed files belong to this review, and name the excluded files in 变更集 so the narrowing is visible — scoping is the one job the session record does even when git is available.
 
 **Fallback — session edit record (来源：会话编辑记录):** when git cannot produce a usable diff — not a git repo, edits already committed with no identifiable base, git unavailable — read `references/session-changeset.md` and reconstruct the change set from the session's edit record. It covers recovering a base from the session's own commits before falling back, the reconstruction method, and the limits that must be declared in the report.
@@ -66,7 +67,20 @@ A review built on what the conversation happens to *mention* will miss whatever 
 - State the issue boundary in one sentence. If the change set appears to solve something other than what the user described, flag the mismatch and ask rather than reviewing against a guessed intent.
 - No git diff *and* no session edits → this is the wrong skill: reviewing a not-yet-implemented plan is plan-review's territory. Say so instead of reviewing an imaginary implementation.
 
-### 2. Establish the baseline and audit conformance in both directions
+### 2. Identify the language stack and recruit language-specific skills
+
+A generic checklist knows nothing about mutable default arguments, `html/template` versus `text/template`, or which formatter this repo enforces in CI. The environment often does — as a language-specific review or style skill that is already installed, as a reviewer subagent, or as the project's own lint and formatter configuration. Find those *before* reviewing, so steps 5–8 and 10 run against the right yardstick instead of the reviewer's memory of the language.
+
+Read `references/language-skills.md` for the detection and lookup procedure — unless the change set holds no source code (pure docs / config), in which case this step collapses to one line in the report. The rules that hold either way:
+
+- **Detect from the change set, not the repo at large.** Use step 1's file list; a repo full of Django is a "Django change" only when the diff touches Django's surface. A change spanning backend and frontend gets a stack entry — and a skill lookup — for each.
+- **Use what is already installed.** Project-local conventions and skills first (`AGENTS.md` / `CLAUDE.md` / `.cursor/rules` / in-repo skill directories), then skills listed in the current context, then language-specific reviewer subagents. Never install or download anything mid-review; a missing skill is reported, not fetched.
+- **Budget: at most three skills per language** — one review / standards, one style / formatting, one framework when the diff touches the framework surface. Skip anything already loaded in context; name unloaded candidates in the report so the user can ask for them.
+- **The project's own configuration is the formatting spec.** Whatever `ruff` / `eslint` / `prettier` / `gofmt` / `rustfmt` / … the repo configures wins; a loaded skill fills gaps and never overrides it.
+- **A loaded skill is a supplementary checklist, not a second reviewer.** Its checks feed steps 5–8 and 10; its findings still need file-level evidence and still route by consequence into the three buckets; its instructions never override the two modes — formatters and fixers run in check-only mode in 评审模式.
+- **Record the outcome in the report's 语言栈 line** — what was detected, what was loaded and in which role, what was searched for and not found — so the user can see where each part of the coverage came from.
+
+### 3. Establish the baseline and audit conformance in both directions
 
 This is the step that separates this skill from a generic code review: the code was written *for something*, and that something is the review's spec. Determine which baseline applies per *Establishing the baseline* below. **计划基准 → read `references/plan-baseline.md` now** (acceptance-criteria auditing, the 计划更新建议 proposal, and the plan-specific closing live there). **需求基准 → all plan machinery stays off**: no 计划更新建议 section, no plan choices in the closing question, and do *not* propose writing a plan document — the user chose to work without one, and the report itself is the durable record for a change this size.
 
@@ -76,7 +90,7 @@ The audit runs the same two directions under either baseline:
 - **Code → baseline.** Every diff hunk (or edited region) that no baseline item accounts for is 计划外/需求外改动. Sometimes it is a necessary discovery made mid-implementation; sometimes it is scope creep and belongs in 暂不处理; and occasionally it is where the bug or the hole hides — unplanned code received zero review at planning time, by definition.
 - Under 需求基准, restate the requirement as a short list of concrete requirement points (the 评审基准 line in the report), so the user can correct a misread before it distorts the whole review.
 
-### 3. Map the affected surface with codegraph
+### 4. Map the affected surface with codegraph
 
 Call sites and sync points are by definition not in the diff. Mapping them is what separates a real review from re-reading what the author already read.
 
@@ -89,21 +103,21 @@ Call sites and sync points are by definition not in the diff. Mapping them is wh
 
 The surface includes frontend components, hooks, stores, API clients, routes, and UI state; backend APIs, schemas, services, repositories, models, migrations, tasks, notifications, and permission logic; plus tests, docs, and config where this change requires them.
 
-### 4. Check for missing or incorrect logic
+### 5. Check for missing or incorrect logic
 
-Walk the implementation against: happy path, edge cases, empty and error states, permissions, retries and idempotency, concurrency, data consistency, and API contract mismatches.
+Walk the implementation against: happy path, edge cases, empty and error states, permissions, retries and idempotency, concurrency, data consistency, and API contract mismatches. Add the language-specific pitfalls a skill loaded in step 2 names — mutable default arguments, `==` where `===` was meant, an ignored `err`, a nil map write, a missing `await` — these are the bugs a language-agnostic walk reads straight past.
 
 Every claim needs a concrete observation behind it — a file read, a codegraph result, a grep hit, or a verification run. "Probably handled" inferred from naming or memory is exactly how reviews pass broken code.
 
 Findings from this step do not get their own report section — a logic gap with real consequence goes into 必须补齐, a genuine but out-of-scope risk into 暂不处理. A separate "逻辑风险" list that restates 必须补齐 items or pads with "无" is exactly the redundancy the report format below removes.
 
-### 5. Check business synchronization
+### 6. Check business synchronization
 
 Credits, org membership, notifications, audit logs, usage records, task status, cache invalidation, and matching client / server / service / repository changes. Use `codegraph_callers` / `codegraph_impact` on the changed entity (model field, enum, API shape) to find every downstream site that must move with it. What the plan (or the requirement) forgot here, the implementation usually forgot too — this is where the two reviews overlap on purpose.
 
-Same routing as step 4: a missing sync site is a 必须补齐 item with the site as evidence, not an entry in a standalone section.
+Same routing as step 5: a missing sync site is a 必须补齐 item with the site as evidence, not an entry in a standalone section.
 
-### 6. Run the security review over the change's attack surface
+### 7. Run the security review over the change's attack surface
 
 New code is where holes enter a codebase, and the moment it lands is the cheapest moment to catch them. The attack surface of this change is whatever the diff adds or alters that outside input can reach: new or changed endpoints and their parameters, new file / network / subprocess operations, new rendering or logging of user data, new authorization decisions.
 
@@ -113,7 +127,7 @@ Sweep these domains against that surface:
 - **注入** — SQL, shell commands, file paths, or HTML assembled by string interpolation from user input: f-strings into `execute`, `subprocess` with `shell=True`, path joins with user-supplied filenames, unescaped rendering.
 - **敏感数据** — response fields beyond what the plan specifies; tokens, credentials, or PII flowing into logs, audit records, or error messages; secrets hardcoded in the diff.
 - **输入校验** — boundary validation at system entry points; unbounded sizes (file uploads, list lengths, pagination); mass assignment where a request dict is written wholesale into a model.
-- **危险原语** — `eval` / `exec` / unpickling untrusted data, requests to user-supplied URLs (SSRF), weak randomness for tokens, disabled TLS verification.
+- **危险原语** — `eval` / `exec` / unpickling untrusted data, requests to user-supplied URLs (SSRF), weak randomness for tokens, disabled TLS verification. Extend this list with the language-specific primitives a step-2 skill names — `yaml.load` without a safe loader, `child_process.exec`, `dangerouslySetInnerHTML`, Go's `text/template` rendering HTML, Rust `unsafe` blocks — the generic list is the floor, not the ceiling.
 
 Two scope rules keep this from becoming a whole-repo security audit:
 
@@ -122,11 +136,12 @@ Two scope rules keep this from becoming a whole-repo security audit:
 
 Severity maps onto the standard tags: reachable and exploitable by an ordinary user → `阻塞`; requires unusual preconditions or an already-privileged position → `重要`; hardening and defense-in-depth → `次要`. Mark every security finding with an additional `[安全]` tag so it stands out in 必须补齐.
 
-### 7. Review code quality: readability, structure, performance
+### 8. Review code quality: readability, structure, performance
 
 A change can be conformant, correct, and secure, and still not be worth merging as written — or, more often, be worth merging with suggestions attached. Hold the approval standard from the Goal while sweeping:
 
 - **Readability** — names carry meaning in context (no bare `temp` / `data` / `result`); control flow is straightforward; no clever tricks a simpler form would replace; comments explain non-obvious intent only. Code this diff orphaned — a helper nothing calls anymore, a replaced component, a dangling constant — gets listed explicitly; whether to delete it now is the user's call, not a silent edit.
+- **Idioms and conventions** — with a language or framework skill loaded in step 2, its idioms are the yardstick for "fits the system"; without one, the yardstick is what the surrounding code in this repo already does. On conflict the repo wins: an idiom the codebase consistently does not follow is a 改进建议 at most, never a 必须补齐. Formatting is not reviewed by eye — step 10 runs the project's formatter in check mode and the result is one finding, not a line-by-line list.
 - **Structure** — the change fits the system it lands in. Watch for: a new conditional bolted onto an unrelated flow (a missing helper, state, or policy — design smell, not a nit); feature-specific logic entering a shared or general-purpose module; a bespoke near-duplicate of an existing canonical helper; an abstraction that has not earned its complexity (don't generalize before the third use); a refactor that relocates complexity instead of reducing it — count the concepts a reader must hold, and if the count is unchanged, it is not cleaner. A diff that mixes refactoring with behavior change is two changes; suggest the split.
 - **Performance** — N+1 query patterns, unbounded loops or unconstrained fetches, missing pagination on new list endpoints, synchronous work that should be async. Quantify where possible: "adds one query per member on a list that can hold thousands" lands; "could be slow" does not.
 - **Dependencies** — a new or upgraded dependency inside the diff is its own finding: does the existing stack already cover it, is it maintained, does the lockfile diff match what was claimed?
@@ -135,30 +150,30 @@ When flagging a structural problem, propose the named move — extract the helpe
 
 Route quality findings by consequence, not by axis: one that threatens the correctness, safety, or maintainability of *this* change (feature logic contaminating a shared module, an N+1 on a hot path, dead code shadowing live code) goes to 必须补齐 with a normal severity tag. Everything else — style, naming, simplifications, "consider" items — goes to 改进建议, explicitly non-blocking, and the user may ignore it freely. Mixing the two is how reviews train authors to skim past everything; and if there is one structural problem and ten nits, the structural problem *is* the review — a few high-conviction findings beat a long list.
 
-### 8. Classify and rank the findings
+### 9. Classify and rank the findings
 
 Sort every finding into one of three buckets:
 
-- **必须补齐 (Current Fix Required)** — needed to make this change correct and safe to ship: conformance gaps (未实现 / 偏离 steps), broken off-diff callers, missing business sync, in-scope security findings, and quality findings with real consequence (step 7). Tag each `阻塞` / `重要` / `次要` (plus `[安全]` where it applies) and order the list by severity.
-- **改进建议 (Suggestions)** — non-blocking quality items from step 7. The user may adopt or ignore them; they never gate the 结论 and never go into the plan unless the user asks.
+- **必须补齐 (Current Fix Required)** — needed to make this change correct and safe to ship: conformance gaps (未实现 / 偏离 steps), broken off-diff callers, missing business sync, in-scope security findings, and quality findings with real consequence (step 8). Tag each `阻塞` / `重要` / `次要` (plus `[安全]` where it applies) and order the list by severity.
+- **改进建议 (Suggestions)** — non-blocking quality items from step 8. The user may adopt or ignore them; they never gate the 结论 and never go into the plan unless the user asks.
 - **暂不处理 (Out Of Scope)** — adjacent or newly discovered problems, including untouched pre-existing vulnerabilities. Report them and wait for approval. They do not go into the plan. "先合了以后再清理" belongs here too, as a written item the user signs off — deferred cleanup that lives nowhere never happens.
 
 Under 计划基准, additionally draft the 计划更新建议 proposal per `references/plan-baseline.md` — as a proposal in the report, never as an edit to the plan document.
 
-### 9. Verify with the narrowest check that produces evidence
+### 10. Verify with the narrowest check that produces evidence
 
 Read-only checks belong in 评审模式 — they are what turn assertions into evidence. The code exists, so verify it directly:
 
-- type-check / lint on touched files (always)
+- type-check / lint / format check on touched files (always) — with the tools the project configures (found in step 2), in **check-only mode**: `ruff check` + `ruff format --check`, `mypy`, `eslint` + `prettier --check`, `tsc --noEmit`, `gofmt -l` + `go vet`, `cargo clippy` + `cargo fmt --check`, `swiftlint`, … A writing mode (`--fix`, `--write`, `-w`, `cargo fmt`) is an edit and belongs to 修复模式. No project config → fall back to the language's default tool if installed, and say in the report that the project enforces nothing.
 - **the baseline's own acceptance criteria for items marked 已实现** — under 计划基准 the plan names its checks (see `references/plan-baseline.md`); skipping them is exactly how an unmet criterion slips through as "done"
 - the most relevant single test file, not the full suite
 - DB changes → migration dry-run or schema diff
 - API contract changes → the affected endpoint's contract or integration test
 - frontend → component test, plus a manual browser check only if interaction logic moved
 
-If the project supplies domain conventions (a tech-stack or coding-standards skill or rule), consult it for business-sync specifics — DB constraints, container exec, test locations, naming — instead of assuming defaults.
+The project conventions found in step 2 (a tech-stack or coding-standards skill or rule) also carry business-sync specifics — DB constraints, container exec, test locations, naming — consult them instead of assuming defaults.
 
-### 10. Report using the template below, then stop
+### 11. Report using the template below, then stop
 
 A failing check is a finding, not a detour: record it under 必须补齐 with the actual error output as evidence and let severity reflect it. Keep the report proportional to the change: an *optional* section with nothing to report is **dropped entirely**, not filled with "无" — the template below marks which sections are core and which are optional. A small diff against a one-line requirement should produce a report the user can read in under a minute.
 
@@ -189,13 +204,15 @@ End the report with the closing question that matches the baseline:
 | "参数来自前端下拉框，值是固定的" | The client is never a trust boundary. Review what an attacker can send, not what the UI sends. |
 | "这个漏洞是老代码带的，不关这次 diff" | Untouched → report in 暂不处理, don't fix. But if the diff copies or extends the pattern, the new instance belongs to this change. |
 | "测试都过了，代码就没问题" | Tests are necessary, not sufficient — they catch neither architecture problems, nor security holes, nor unreadable code. |
-| "能跑就行，可读性以后再说" | Working code that is unreadable or misplaced compounds debt. Quality is an axis of this review; route it per step 7. |
+| "能跑就行，可读性以后再说" | Working code that is unreadable or misplaced compounds debt. Quality is an axis of this review; route it per step 8. |
+| "没有 Python 专项技能，评审只能做个大概" | The generic checklist *is* the review; a language skill sharpens it. Write 未找到 in the 语言栈 line and run the full checklist anyway. |
+| "顺手 `ruff --fix` / `prettier --write` 一下" | That writes files — 修复模式 without approval. In 评审模式 every formatter and fixer runs in check-only mode. |
 | "不是我喜欢的写法，让作者改掉" | Preference is not a finding. If the change improves code health and follows conventions, it passes; taste goes to 改进建议. |
 | "重构完看起来干净多了" | Relocating complexity is not reducing it. Count the concepts a reader must hold — unchanged count means unchanged structure. |
 | "先合了，这些小问题以后再清" | Deferred cleanup that lives nowhere never happens. Either it enters 必须补齐 now, or it is a written 暂不处理 item the user signs off. |
 | "codegraph 慢，先跳过" | Querying is sub-millisecond — the index already did the work, and skipping it is the biggest cause of missed sync points. Building an index from scratch is the expensive part, and that decision belongs to the user (see `references/codegraph-recovery.md`). |
 
-Branch-specific anti-patterns live with their machinery: plan-document rows in `references/plan-baseline.md`, pre-authorization rows in `references/fix-mode.md`, session-fallback rows in `references/session-changeset.md`, index-recovery rows in `references/codegraph-recovery.md`.
+Branch-specific anti-patterns live with their machinery: language-detection and skill-lookup rows in `references/language-skills.md`, plan-document rows in `references/plan-baseline.md`, pre-authorization rows in `references/fix-mode.md`, session-fallback rows in `references/session-changeset.md`, index-recovery rows in `references/codegraph-recovery.md`.
 
 ## Establishing the baseline
 
@@ -208,7 +225,7 @@ When deciding what to check conformance against, walk down this list and take th
 
 ## Output format
 
-Core sections appear in every report: the unnumbered header block (结论 / 问题边界 / 变更集 / 评审基准), plus 符合度、已核对范围、安全评审、已执行验证 — these carry the evidence, and "no issues" without evidence is rubber-stamping. Every other section is **optional: drop it entirely when it has nothing to report** — do not write "无" as a placeholder.
+Core sections appear in every report: the unnumbered header block (结论 / 问题边界 / 变更集 / 评审基准 / 语言栈), plus 符合度、已核对范围、安全评审、已执行验证 — these carry the evidence, and "no issues" without evidence is rubber-stamping. Every other section is **optional: drop it entirely when it has nothing to report** — do not write "无" as a placeholder.
 
 **Numbering is the report's addressing scheme.** Sections are numbered `1.` `2.` `3.` …; items inside actionable sections are numbered `N.1` `N.2` … so the user can reply with bare numbers — "修复 3.1 和 3.3，5.2 也采纳" — instead of re-describing findings. Two rules make the numbers reliable:
 
@@ -222,6 +239,7 @@ Core sections appear in every report: the unnumbered header block (结论 / 问�
 问题边界：[one sentence]
 变更集：[N 个文件，关键符号 a / b / c]（来源：git diff ／ 会话编辑记录；会话来源时附一句局限说明）
 评审基准：[计划文档 path ／ 需求基准：一句话复述用户需求]
+语言栈：[语言（框架）…]；已加载：[技能名（角色）…]；项目配置：[lint / format 工具]；未找到或未加载候选：[按名列出]
 
 ---
 
@@ -233,8 +251,8 @@ Core sections appear in every report: the unnumbered header block (结论 / 问�
 
 ### 2. 已核对范围
 
-- [file or symbol]：[codegraph_context / codegraph_callers / Read / Grep / 运行测试]
-- （相邻但未覆盖的面也要诚实列出，写"未核对"）
+- [file or symbol]：[codegraph_context / codegraph_callers / Read / Grep / 运行测试 / 按 <语言技能名> 清单核对]
+- （相邻但未覆盖的面也要诚实列出，写"未核对"；用了评审子代理时写明"候选 N 条，核实后采纳 M 条"）
 
 ### 3. 必须补齐（可选节；按严重度排序，含逻辑缺陷与业务同步缺失，安全项加 [安全]，提前授权下已修复的加 [已修·提前授权]）
 
@@ -255,7 +273,7 @@ Core sections appear in every report: the unnumbered header block (结论 / 问�
 
 ### 7. 已执行验证
 
-- [command 或验收核对动作] → [结果]
+- [command 或验收核对动作] → [结果]（lint / format 检查写出实际命令及 check-only 标志，如 `ruff format --check app/` → 2 files would be reformatted）
 
 ---
 
@@ -266,5 +284,7 @@ Core sections appear in every report: the unnumbered header block (结论 / 问�
 - 回复"全部修复"，或指定编号（如"修复 3.1、3.3"）
 - 改进建议如需采纳、暂不处理项如需纳入本次修复，也用编号一并说明（如"5.1 采纳，6.2 一起修"）
 ```
+
+The 语言栈 line follows the worked examples in `references/language-skills.md` §4 — a change set with no source code collapses it to `语言栈：无源码`.
 
 Under 计划基准, two additions from `references/plan-baseline.md` apply: an optional 计划更新建议 section (inserted before 下一步, renumbered with the rest), and the A/B/C 三选项 closing that **replaces** the 需求基准 下一步 block — never emit both. The section numbers above show the fullest case; a real report renumbers after dropping empty sections. When the user replies with numbers, resolve them against *this* report's numbering and restate each resolved item in one line before fixing, so a mis-typed number cannot silently authorize the wrong fix. 改进建议 alone never changes the 结论: a change with only suggestions attached is still 可以合并.

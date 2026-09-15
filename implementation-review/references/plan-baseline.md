@@ -4,7 +4,7 @@ Read this file when the review baseline is a plan document（计划基准）. Ev
 
 ## Conformance specifics beyond the shared audit
 
-- **Acceptance criteria are part of conformance.** A criterion the plan names but nobody ran — "非成员返回 403" with no test behind it — is 未实现 even when the happy-path code exists. The plan already names its checks, which also makes them the cheapest verification available in checklist step 9; skipping them is exactly how an unmet criterion slips through as "done".
+- **Acceptance criteria are part of conformance.** A criterion the plan names but nobody ran — "非成员返回 403" with no test behind it — is 未实现 even when the happy-path code exists. The plan already names its checks, which also makes them the cheapest verification available in checklist step 10; skipping them is exactly how an unmet criterion slips through as "done".
 
 ## Drafting the 计划更新建议 (plan update proposal)
 
