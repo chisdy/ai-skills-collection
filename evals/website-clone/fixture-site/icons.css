@@ -1,0 +1,10 @@
+/* 模拟 Font Awesome 的 icon-font class：不加载真正字体，只让 class 存在于 DOM 供采集脚本识别。
+   用伪元素画一个占位形状，保证 .fa-solid 有可见尺寸。 */
+.fa-solid { display: inline-block; width: 1em; height: 1em; line-height: 1; vertical-align: -0.125em; position: relative; }
+.fa-solid::before { content: ""; position: absolute; inset: 15%; border-radius: 3px; background: currentColor; opacity: 0.85; }
+.fa-cart-shopping::before { border-radius: 3px 3px 8px 8px; }
+.fa-truck-fast::before { border-radius: 2px 8px 8px 2px; }
+.fa-star::before { border-radius: 50%; }
+.fa-heart::before { border-radius: 50% 50% 4px 4px; }
+.fa-user::before { border-radius: 50% 50% 4px 4px; }
+.fa-lock::before { border-radius: 4px 4px 8px 8px; }

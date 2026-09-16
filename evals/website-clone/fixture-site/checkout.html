@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>结算 — Lumen</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="icons.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html" aria-label="Lumen 首页">
+    <svg class="logo-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2zm-2 18h4v2h-4z"/></svg>
+    <span>Lumen</span>
+  </a>
+  <nav class="main-nav" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="products.html">全部灯具</a>
+    <a href="about.html">关于我们</a>
+  </nav>
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="login.html">登录</a>
+  </div>
+</header>
+
+<main class="page">
+  <nav class="breadcrumb" aria-label="面包屑"><a href="index.html">首页</a><span>/</span><span>结算</span></nav>
+  <h1 class="page-title">结算</h1>
+  <ol class="steps"><li class="current">1 购物车</li><li>2 收货信息</li><li>3 支付</li></ol>
+
+  <div class="checkout">
+    <form class="form-grid" action="/api/orders" method="post" data-form="order">
+      <h2 class="section-title" style="font-size:24px">购物车</h2>
+      <div data-cart-items></div>
+
+      <h2 class="section-title" style="font-size:24px;margin-top:var(--space-4)">收货信息</h2>
+      <div class="form-row">
+        <label class="field">收货人<input type="text" name="receiver" required autocomplete="name"></label>
+        <label class="field">手机号<input type="tel" name="phone" required autocomplete="tel"></label>
+      </div>
+      <div class="form-row">
+        <label class="field">省 / 市
+          <select name="region" required>
+            <option value="">请选择</option><option>上海</option><option>北京</option><option>广东</option><option>浙江</option>
+          </select>
+        </label>
+        <label class="field">邮编<input type="text" name="postcode" inputmode="numeric" pattern="\d{6}"></label>
+      </div>
+      <label class="field">详细地址<input type="text" name="address" required autocomplete="street-address"></label>
+      <label class="field">备注<textarea name="note" rows="2" placeholder="例如：放门卫处"></textarea></label>
+
+      <h2 class="section-title" style="font-size:24px;margin-top:var(--space-4)">配送方式</h2>
+      <label><input type="radio" name="shipping" value="standard" checked style="width:auto"> 标准配送（3–5 天）</label>
+      <label><input type="radio" name="shipping" value="express" style="width:auto"> 次日达（+¥30）</label>
+
+      <h2 class="section-title" style="font-size:24px;margin-top:var(--space-4)">支付方式</h2>
+      <label><input type="radio" name="payment" value="alipay" checked style="width:auto"> 支付宝</label>
+      <label><input type="radio" name="payment" value="wechat" style="width:auto"> 微信支付</label>
+      <label><input type="radio" name="payment" value="card" style="width:auto"> 银行卡</label>
+
+      <label class="field">优惠码
+        <div style="display:flex;gap:8px"><input type="text" name="coupon" placeholder="LUMEN10"><button class="btn btn-secondary" type="button" data-apply-coupon>应用</button></div>
+      </label>
+
+      <button class="btn btn-primary" type="submit" data-place-order disabled>提交订单</button>
+      <p class="error" role="alert"></p>
+    </form>
+
+    <aside class="summary" aria-label="订单摘要">
+      <h3>订单摘要</h3>
+      <div class="summary-row"><span>小计</span><span data-subtotal>¥0</span></div>
+      <div class="summary-row"><span>运费</span><span data-shipping>免运费</span></div>
+      <div class="summary-row total"><span>合计</span><span data-total>¥0</span></div>
+      <p class="help">下单即表示同意 <a href="about.html#terms">服务条款</a> 与 <a href="about.html#privacy">隐私政策</a>。</p>
+    </aside>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-meta"><span>© 2026 Lumen Lighting（演示站点）</span><a href="about.html#contact">联系我们</a></div>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

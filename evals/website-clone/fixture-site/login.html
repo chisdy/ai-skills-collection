@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 / 注册 — Lumen</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="icons.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html" aria-label="Lumen 首页">
+    <svg class="logo-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2zm-2 18h4v2h-4z"/></svg>
+    <span>Lumen</span>
+  </a>
+  <nav class="main-nav" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="products.html">全部灯具</a>
+    <a href="about.html">关于我们</a>
+  </nav>
+  <div class="header-actions">
+    <a class="icon-btn" href="checkout.html" aria-label="购物车">
+      <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+      <span class="badge" data-cart-count>0</span>
+    </a>
+  </div>
+</header>
+
+<main class="page">
+  <section class="auth" id="login">
+    <h1>登录</h1>
+    <form class="form-grid" action="/api/login" method="post" data-form="login">
+      <label class="field">邮箱
+        <input type="email" name="email" required autocomplete="email" placeholder="you@example.com">
+      </label>
+      <label class="field">密码
+        <input type="password" name="password" required minlength="8" autocomplete="current-password">
+        <span class="help">至少 8 位</span>
+      </label>
+      <label><input type="checkbox" name="remember" value="1" style="width:auto"> 记住我</label>
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-lock" aria-hidden="true"></i> 登录</button>
+      <p class="error" role="alert"></p>
+      <a class="help" href="#forgot">忘记密码？</a>
+    </form>
+    <div class="divider">或</div>
+    <div class="social">
+      <button class="btn btn-secondary" type="button" data-oauth="wechat">使用微信登录</button>
+      <button class="btn btn-secondary" type="button" data-oauth="apple">使用 Apple 登录</button>
+    </div>
+  </section>
+
+  <section class="auth" id="register" style="margin-top: var(--space-5)">
+    <h1>注册</h1>
+    <form class="form-grid" action="/api/register" method="post" data-form="register">
+      <div class="form-row">
+        <label class="field">姓名<input type="text" name="name" required autocomplete="name"></label>
+        <label class="field">手机号<input type="tel" name="phone" pattern="1[3-9]\d{9}" placeholder="13800000000" autocomplete="tel"></label>
+      </div>
+      <label class="field">邮箱<input type="email" name="email" required autocomplete="email"></label>
+      <div class="form-row">
+        <label class="field">密码<input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+        <label class="field">确认密码<input type="password" name="confirm" required minlength="8" autocomplete="new-password"></label>
+      </div>
+      <label><input type="checkbox" name="agree" value="1" required style="width:auto"> 我已阅读并同意 <a href="about.html#terms">服务条款</a></label>
+      <button class="btn btn-primary" type="submit">创建账户</button>
+      <p class="error" role="alert"></p>
+    </form>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-meta"><span>© 2026 Lumen Lighting（演示站点）</span><a href="about.html#contact">联系我们</a></div>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

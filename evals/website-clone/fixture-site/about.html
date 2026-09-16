@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>关于我们 — Lumen</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="icons.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html" aria-label="Lumen 首页">
+    <svg class="logo-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2zm-2 18h4v2h-4z"/></svg>
+    <span>Lumen</span>
+  </a>
+  <nav class="main-nav" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="products.html">全部灯具</a>
+    <a href="about.html" class="active">关于我们</a>
+  </nav>
+  <div class="header-actions">
+    <a class="icon-btn" href="checkout.html" aria-label="购物车">
+      <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+      <span class="badge" data-cart-count>0</span>
+    </a>
+    <a class="btn btn-ghost" href="login.html">登录</a>
+  </div>
+</header>
+
+<main class="page">
+  <h1 class="page-title">关于 Lumen</h1>
+  <p class="lead">Lumen 是一家 2019 年成立于景德镇的灯具工作室。我们只做一件事：把手工玻璃和现代光源放在一起。</p>
+
+  <section id="shipping" class="reveal">
+    <h2 class="section-title">配送与退换</h2>
+    <p>现货 48 小时内发出，全国包邮。签收后 30 天内可无理由退换，破损包赔。</p>
+  </section>
+  <section id="warranty" class="reveal">
+    <h2 class="section-title">质保政策</h2>
+    <p>光源、驱动、灯体三年质保。质保期内出现非人为损坏，寄回后免费维修并承担双程运费。</p>
+  </section>
+  <section id="terms" class="reveal">
+    <h2 class="section-title">服务条款</h2>
+    <p>本站为演示站点，不产生真实交易。</p>
+  </section>
+  <section id="privacy" class="reveal">
+    <h2 class="section-title">隐私政策</h2>
+    <p>我们不收集任何个人信息。</p>
+  </section>
+  <section id="contact" class="reveal">
+    <h2 class="section-title">联系我们</h2>
+    <form class="form-grid" action="/api/contact" method="post" data-form="contact" style="max-width:520px">
+      <label class="field">姓名<input type="text" name="name" required></label>
+      <label class="field">邮箱<input type="email" name="email" required></label>
+      <label class="field">留言<textarea name="message" rows="4" required></textarea></label>
+      <button class="btn btn-primary" type="submit">发送</button>
+      <p class="error" role="alert"></p>
+    </form>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-meta"><span>© 2026 Lumen Lighting（演示站点）</span><a href="index.html">返回首页</a></div>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

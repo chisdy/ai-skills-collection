@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品详情 — Lumen</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="icons.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html" aria-label="Lumen 首页">
+    <svg class="logo-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2zm-2 18h4v2h-4z"/></svg>
+    <span>Lumen</span>
+  </a>
+  <nav class="main-nav" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="products.html" class="active">全部灯具</a>
+    <a href="products.html?category=pendant">吊灯</a>
+    <a href="products.html?category=desk">台灯</a>
+    <a href="about.html">关于我们</a>
+  </nav>
+  <div class="header-actions">
+    <a class="icon-btn" href="checkout.html" aria-label="购物车">
+      <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+      <span class="badge" data-cart-count>0</span>
+    </a>
+    <a class="btn btn-ghost" href="login.html">登录</a>
+  </div>
+</header>
+
+<main class="page" data-product-detail>
+  <nav class="breadcrumb" aria-label="面包屑"><a href="index.html">首页</a><span>/</span><a href="products.html">全部灯具</a><span>/</span><span data-breadcrumb-name>…</span></nav>
+
+  <section class="detail">
+    <div class="gallery">
+      <img data-main-image src="assets/product-1.svg" alt="" width="600" height="450">
+      <div class="thumbs" data-thumbs></div>
+    </div>
+    <div class="detail-info">
+      <span class="product-category" data-category-label></span>
+      <h1 data-name>…</h1>
+      <div data-rating></div>
+      <p class="price-lg" data-price></p>
+      <p data-desc class="lead"></p>
+      <div class="options">
+        <div>
+          <div class="help">颜色</div>
+          <div class="swatches" data-swatches></div>
+        </div>
+        <div>
+          <div class="help">数量</div>
+          <div class="qty">
+            <button type="button" data-qty-dec aria-label="减少">−</button>
+            <input type="number" value="1" min="1" max="9" data-qty aria-label="数量">
+            <button type="button" data-qty-inc aria-label="增加">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="hero-cta">
+        <button class="btn btn-primary" type="button" data-add-detail>
+          <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> 加入购物车
+        </button>
+        <button class="btn btn-secondary" type="button" data-wishlist aria-label="加入心愿单">
+          <i class="fa-solid fa-heart" aria-hidden="true"></i> 心愿单
+        </button>
+      </div>
+      <p class="help">现货 · 48 小时发货 · 满 ¥999 免运费 · 30 天无理由退换</p>
+    </div>
+  </section>
+
+  <div class="tabs" role="tablist">
+    <button type="button" class="active" data-tab="specs" role="tab">规格参数</button>
+    <button type="button" data-tab="reviews" role="tab">用户评价</button>
+    <button type="button" data-tab="shipping" role="tab">配送与质保</button>
+  </div>
+  <section class="tab-panel" data-tab-panel="specs">
+    <table>
+      <tr><th>光源</th><td>LED 模组，可更换</td></tr>
+      <tr><th>功率</th><td>24 W</td></tr>
+      <tr><th>色温</th><td>2700K – 6500K 无极调节</td></tr>
+      <tr><th>材质</th><td>手工吹制玻璃 / 黄铜</td></tr>
+    </table>
+  </section>
+  <section class="tab-panel" data-tab-panel="reviews" hidden>
+    <div data-reviews></div>
+    <form class="review-form" action="/api/reviews" method="post" data-form="review">
+      <label class="field">评分
+        <select name="rating"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
+      </label>
+      <label class="field">评价内容
+        <textarea name="body" rows="3" required placeholder="说说使用感受"></textarea>
+      </label>
+      <button class="btn btn-primary" type="submit">提交评价</button>
+      <p class="error" role="alert"></p>
+    </form>
+  </section>
+  <section class="tab-panel" data-tab-panel="shipping" hidden>
+    <p>全国包邮，48 小时内发出。三年质保，光源与驱动免费更换。</p>
+  </section>
+
+  <section class="showcase">
+    <div class="section-head"><h2 class="section-title">同系列</h2></div>
+    <div class="product-grid" data-related></div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-meta"><span>© 2026 Lumen Lighting（演示站点）</span><a href="about.html#contact">联系我们</a></div>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

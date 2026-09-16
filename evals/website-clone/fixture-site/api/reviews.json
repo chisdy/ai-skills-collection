@@ -1,0 +1,6 @@
+[
+  {"id": 101, "productId": 1, "author": "周女士", "rating": 5, "date": "2026-03-02", "body": "光线很柔和，玻璃颜色比图片还好看。安装师傅说结构很扎实。"},
+  {"id": 102, "productId": 1, "author": "Leo", "rating": 4, "date": "2026-02-18", "body": "调色温很实用，唯一的问题是遥控器有点小。"},
+  {"id": 103, "productId": 3, "author": "阿林", "rating": 5, "date": "2026-01-25", "body": "晚上写字眼睛不累了，USB-C 口给手机充电也方便。"},
+  {"id": 104, "productId": 2, "author": "Mia", "rating": 4, "date": "2025-12-30", "body": "很有存在感，底座重，不怕小孩碰倒。"}
+]

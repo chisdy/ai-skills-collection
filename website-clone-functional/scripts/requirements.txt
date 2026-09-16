@@ -1,0 +1,7 @@
+# 只有 crawl_features.py 需要 playwright；analyze_features.py 仅标准库。
+#
+# 安装（Homebrew / 系统 Python 会被 PEP 668 拒绝裸 pip install，用 venv 或 uv）：
+#   python3 -m venv /tmp/wc-venv && /tmp/wc-venv/bin/pip install -r requirements.txt && /tmp/wc-venv/bin/playwright install chromium
+#   或：uv run --with playwright python scripts/crawl_features.py <url>
+# 装不上：改走 SKILL.md 的内联浏览器路径，逐页注入 collect/links.js 与 collect/features.js。
+playwright>=1.45

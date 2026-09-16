@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumen 灯具商店 — 首页</title>
+<meta name="description" content="Lumen 是一个演示用的灯具电商小站，用于 website-clone 技能组的评测。">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="icons.css">
+<script src="vendor/aos.min.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html" aria-label="Lumen 首页">
+    <svg class="logo-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2zm-2 18h4v2h-4z"/></svg>
+    <span>Lumen</span>
+  </a>
+  <nav class="main-nav" aria-label="主导航">
+    <a href="index.html" class="active">首页</a>
+    <a href="products.html">全部灯具</a>
+    <a href="products.html?category=pendant">吊灯</a>
+    <a href="products.html?category=desk">台灯</a>
+    <a href="about.html">关于我们</a>
+  </nav>
+  <div class="header-actions">
+    <button class="icon-btn" aria-label="搜索" data-action="open-search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <a class="icon-btn" href="checkout.html" aria-label="购物车">
+      <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+      <span class="badge" data-cart-count>0</span>
+    </a>
+    <a class="btn btn-ghost" href="login.html">登录</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow fade-up" style="--delay: 0ms">2026 春季新品</p>
+      <h1 class="fade-up" style="--delay: 80ms">光，应该像家一样柔软</h1>
+      <p class="lead fade-up" style="--delay: 160ms">手工吹制玻璃、可调色温、三年质保。为每一间房找到合适的那一盏。</p>
+      <div class="hero-cta fade-up" style="--delay: 240ms">
+        <a class="btn btn-primary" href="products.html">
+          浏览全部
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a class="btn btn-secondary" href="about.html">了解工艺</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img src="assets/hero.svg" alt="一盏悬挂的琥珀色玻璃吊灯" width="520" height="420" class="float">
+    </div>
+  </section>
+
+  <section class="features" aria-labelledby="features-title">
+    <h2 id="features-title" class="section-title reveal">为什么选 Lumen</h2>
+    <div class="feature-grid">
+      <article class="feature-card reveal">
+        <span class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3v2m0 14v2m9-9h-2M5 12H3m13.7-5.7-1.4 1.4M8.7 15.3l-1.4 1.4m0-9.4 1.4 1.4m6.6 6.6 1.4 1.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </span>
+        <h3>2700K – 6500K 全域调光</h3>
+        <p>一盏灯覆盖清晨到深夜。所有型号都支持无极调色温。</p>
+      </article>
+      <article class="feature-card reveal">
+        <span class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>三年质保</h3>
+        <p>光源、驱动、灯体全部覆盖。出问题寄回来，我们修好再寄回去。</p>
+      </article>
+      <article class="feature-card reveal">
+        <span class="feature-icon" aria-hidden="true">
+          <i class="fa-solid fa-truck-fast"></i>
+        </span>
+        <h3>48 小时发货</h3>
+        <p>现货型号 48 小时内发出，全国包邮，破损包赔。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="showcase" aria-labelledby="showcase-title">
+    <div class="section-head">
+      <h2 id="showcase-title" class="section-title reveal">本周精选</h2>
+      <a class="link-arrow" href="products.html">查看全部 <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="product-grid" data-featured-products>
+      <!-- 由 app.js 从 api/products.json 渲染前 3 个 -->
+    </div>
+  </section>
+
+  <section class="testimonial reveal">
+    <blockquote>
+      <p>"客厅换了 Halo 吊灯之后，晚上不想开顶灯了。"</p>
+      <footer>— 周女士，上海</footer>
+    </blockquote>
+  </section>
+
+  <section class="newsletter">
+    <h2 class="section-title">订阅新品通知</h2>
+    <form class="newsletter-form" action="/api/subscribe" method="post" data-form="newsletter">
+      <label class="sr-only" for="newsletter-email">邮箱</label>
+      <input id="newsletter-email" name="email" type="email" placeholder="you@example.com" required>
+      <button class="btn btn-primary" type="submit">订阅</button>
+    </form>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-cols">
+    <div>
+      <h4>购物</h4>
+      <a href="products.html">全部灯具</a>
+      <a href="products.html?category=pendant">吊灯</a>
+      <a href="products.html?category=desk">台灯</a>
+      <a href="products.html?category=floor">落地灯</a>
+    </div>
+    <div>
+      <h4>帮助</h4>
+      <a href="about.html#shipping">配送与退换</a>
+      <a href="about.html#warranty">质保政策</a>
+      <a href="about.html#contact">联系我们</a>
+    </div>
+    <div>
+      <h4>账户</h4>
+      <a href="login.html">登录</a>
+      <a href="login.html#register">注册</a>
+      <a href="checkout.html">购物车</a>
+    </div>
+  </div>
+  <div class="footer-meta">
+    <span>© 2026 Lumen Lighting（演示站点）</span>
+    <div class="lang-switch">
+      <button type="button" class="active" data-lang="zh">中文</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

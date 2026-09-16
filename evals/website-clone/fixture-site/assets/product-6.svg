@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+<rect width="400" height="300" fill="#faf7f2"/>
+<line x1="200" y1="0" x2="200" y2="120" stroke="#1f1a17" stroke-width="3"/>
+<path d="M116 168 Q200 78 284 168 Z" fill="#1f1a17"/>
+<ellipse cx="200" cy="168" rx="84" ry="14" fill="#c8742a"/>
+<ellipse cx="200" cy="230" rx="126" ry="30" fill="#c8742a" opacity="0.35"/>
+<text x="200" y="285" font-family="Georgia, serif" font-size="14" fill="#6b625b" text-anchor="middle">Lumen No.6</text>
+</svg>

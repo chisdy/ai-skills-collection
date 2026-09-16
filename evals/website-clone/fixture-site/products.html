@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全部灯具 — Lumen</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="icons.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html" aria-label="Lumen 首页">
+    <svg class="logo-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2zm-2 18h4v2h-4z"/></svg>
+    <span>Lumen</span>
+  </a>
+  <nav class="main-nav" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="products.html" class="active">全部灯具</a>
+    <a href="products.html?category=pendant">吊灯</a>
+    <a href="products.html?category=desk">台灯</a>
+    <a href="about.html">关于我们</a>
+  </nav>
+  <div class="header-actions">
+    <a class="icon-btn" href="checkout.html" aria-label="购物车">
+      <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+      <span class="badge" data-cart-count>0</span>
+    </a>
+    <a class="btn btn-ghost" href="login.html">登录</a>
+  </div>
+</header>
+
+<main class="page">
+  <nav class="breadcrumb" aria-label="面包屑"><a href="index.html">首页</a><span>/</span><span>全部灯具</span></nav>
+  <h1 class="page-title">全部灯具</h1>
+
+  <div class="catalog">
+    <aside class="filters" aria-label="筛选">
+      <div class="filter-group">
+        <h4>分类</h4>
+        <label><input type="radio" name="category" value="" data-category checked> 全部</label>
+        <label><input type="radio" name="category" value="pendant" data-category> 吊灯</label>
+        <label><input type="radio" name="category" value="floor" data-category> 落地灯</label>
+        <label><input type="radio" name="category" value="desk" data-category> 台灯</label>
+        <label><input type="radio" name="category" value="ceiling" data-category> 吸顶灯</label>
+        <label><input type="radio" name="category" value="wall" data-category> 壁灯</label>
+      </div>
+      <div class="filter-group">
+        <h4>价格上限 <output data-price-out>¥5000</output></h4>
+        <input type="range" min="200" max="5000" step="100" value="5000" data-price aria-label="价格上限">
+      </div>
+      <button class="btn btn-secondary" type="button" data-reset>重置筛选</button>
+    </aside>
+
+    <section aria-label="商品列表">
+      <div class="toolbar" id="search">
+        <input class="search" type="search" placeholder="搜索灯具名称…" data-search aria-label="搜索">
+        <span class="result-count" data-result-count>共 0 件</span>
+        <label>排序
+          <select data-sort>
+            <option value="featured">推荐</option>
+            <option value="price-asc">价格从低到高</option>
+            <option value="price-desc">价格从高到低</option>
+            <option value="rating">评分最高</option>
+          </select>
+        </label>
+      </div>
+      <div class="product-grid" data-product-grid>
+        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      </div>
+      <nav class="pagination" aria-label="分页" data-pagination></nav>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-meta"><span>© 2026 Lumen Lighting（演示站点）</span><a href="about.html#contact">联系我们</a></div>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

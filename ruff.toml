@@ -1,0 +1,8 @@
+# 仓库内 Python 脚本（各技能 scripts/）的 lint / format 统一配置。
+# 检查：ruff check <skill>/scripts    格式：ruff format --check <skill>/scripts
+line-length = 200
+target-version = "py39"
+
+[lint]
+select = ["E", "F", "W", "B", "I"]
+ignore = ["E501"]  # 长行由 line-length 控制格式，不单独报错（模板字符串 / 长 f-string 较多）

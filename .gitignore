@@ -28,3 +28,8 @@ build/
 # apple-icon-design evals：二进制素材由 make_fixture.py 生成
 evals/apple-icon-design/fixture-repo/**/*.png
 evals/apple-icon-design/fixture-repo/**/*.jpg
+# website-clone evals：fixture 只放 SVG，采集产物与截图不入库
+evals/website-clone/fixture-site/**/*.png
+evals/website-clone/**/capture/
+evals/website-clone/**/features/
+evals/website-clone/**/clone-package/

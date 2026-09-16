@@ -1,0 +1,63 @@
+{
+  "skill_name": "website-clone-visual",
+  "fixture": "../website-clone/fixture-site（共享：cd evals/website-clone/fixture-site && python3 -m http.server 8765）",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "static-html-single-page",
+      "prompt": "帮我把 http://localhost:8765/index.html 这个页面的样式、布局和动画原样还原成一个静态 HTML/CSS/JS 页面，图标用 Lucide。这是我自己练手的站。",
+      "expected_output": "一句话确认用途后只问缺失项（视口用默认、栈与图标已给）。路径 A：安装 venv 后 capture_site.py 采单页三视口，map_icons.py + analyze_capture.py 产出 blueprint.md。按蓝图先落 :root token，再按 sections 顺序逐区块实现（hero、卖点三列、精选卡片、页脚），数值来自 computed.json；@keyframes 入场与 IntersectionObserver 滚动显现、hover 过渡按 animations.json / hover.json 复原，包在 prefers-reduced-motion 里；内联 SVG 图标按 icons-map.json 换 Lucide。起本地服务后 compare_pages.py 对比，ERROR 项修到通过。不写 PRD、不分析功能。",
+      "files": ["../website-clone/fixture-site/index.html", "../website-clone/fixture-site/styles.css"],
+      "assertions": [
+        {"name": "captures_before_building", "description": "先运行 capture_site.py（或内联浏览器路径）产出契约目录与 blueprint.md，再开始写代码，不凭截图估尺寸"},
+        {"name": "tokens_first", "description": "先把蓝图的设计 token 落成 CSS 变量（沿用原站 :root 命名），再逐区块实现"},
+        {"name": "values_from_computed", "description": "区块布局、字号、间距、颜色引用 computed.json / sections.json 的测量值"},
+        {"name": "animations_reproduced", "description": "复原 @keyframes 入场、滚动显现（IntersectionObserver）与 hover 过渡，且尊重 prefers-reduced-motion"},
+        {"name": "icons_mapped_to_lucide", "description": "按 icons-map.json 把内联 SVG 换成 Lucide 等价图标，Logo 保留为内联 SVG 不映射"},
+        {"name": "runs_compare", "description": "运行 compare_pages.py 对比原站与本地复刻，处理 ERROR 级差异并报告差异百分比"},
+        {"name": "no_functional_docs", "description": "不产出 PRD / 信息架构文档，不分析业务功能与后台"}
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "react-tailwind-multipage",
+      "prompt": "用 React 19 + Tailwind v4 复刻 http://localhost:8765/ 的首页、商品列表和商品详情三页的视觉效果，要包含滚动显现动画和 hover，图标库随你推荐。",
+      "expected_output": "确认用途。capture_site.py 用 --follow-nav 或手写 site-map.json 采三页；蓝图做站点级 token 合并。Vite + pnpm 脚手架，token 写进 Tailwind v4 @theme，按 references/stack-react.md 划分组件（Header / Hero / ProductCard / Footer…），滚动显现用 IntersectionObserver hook，hover 用 Tailwind 状态类；推荐 Lucide（lucide-react）并说明理由。三页分别 compare。",
+      "files": ["../website-clone/fixture-site/"],
+      "assertions": [
+        {"name": "multi_page_capture", "description": "三页都被采集（--follow-nav 或 site-map.json），blueprint.md 有站点级 token 与逐页区块"},
+        {"name": "theme_tokens", "description": "token 落到 Tailwind v4 @theme 而不是散落的硬编码色值"},
+        {"name": "component_split_follows_sections", "description": "组件划分对应 sections.json 的区块，重复卡片抽成组件"},
+        {"name": "recommends_icon_lib_with_reason", "description": "推荐图标库时给出依据（原站图标风格 / icons-map 候选命中率）"},
+        {"name": "compares_each_page", "description": "每页都运行 compare 并报告差异"},
+        {"name": "no_prd_or_ia", "description": "不写 PRD / 信息架构，不做功能分析"}
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "verify-existing-clone",
+      "prompt": "我已经照着 http://localhost:8765/products.html 写了一个复刻，跑在 http://localhost:5173/products.html。帮我看看差多少、差在哪。",
+      "expected_output": "不重新复刻：直接 compare_pages.py <原站> <本地> 三视口，读 compare-report.md：像素差异 %、差异集中的区块（heatmap / 100px 带）、boundingBox 偏差、404 资源、字体回退。按 ERROR / WARN / INFO 分级给出要改的区块与具体属性（查 computed.json 给精确值）。",
+      "files": [],
+      "assertions": [
+        {"name": "does_not_rebuild", "description": "不重新采集复刻整页，直接进入校验步骤"},
+        {"name": "reports_by_severity", "description": "按 ERROR / WARN / INFO 给出差异，包含差异百分比与集中区域"},
+        {"name": "points_to_exact_fix", "description": "对主要差异给出对应区块与具体 CSS 属性 / 值（来自原站 computed 数据）"}
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "no-python-inline-browser",
+      "prompt": "复刻 http://localhost:8765/login.html 的样式，做成 Vue 3.5 + Tailwind v4 组件。这台机器没有 Python，只有 Cursor 的内联浏览器。",
+      "expected_output": "走路径 B：按 references/capture-guide.md 的 cursor-ide-browser 表——browser_navigate、Emulation.setDeviceMetricsOverride 设视口、Runtime.evaluate 注入 collect/*.js（returnByValue），大响应落盘文件用 save_result.py 写到契约位置，browser_take_screenshot 留底，CSS.forcePseudoState 采 hover。分析脚本仅标准库也不可用时按 capture 结果与 references/blueprint.md 手工读 token。按 stack-vue.md 实现组件。校验降级为双截图对比 + 两边跑 sections.js 比 rect，并说明保真度上限。",
+      "files": ["../website-clone/fixture-site/login.html"],
+      "assertions": [
+        {"name": "uses_inline_browser_path", "description": "使用 cursor-ide-browser 工具序列（navigate / cdp Runtime.evaluate / screenshot），不假装运行 Python 脚本"},
+        {"name": "same_collect_scripts", "description": "注入的是 scripts/collect/*.js 原文，结果保存到契约目录结构"},
+        {"name": "uses_correct_tool_table", "description": "使用 cursor-ide-browser 那张映射表（Emulation.setDeviceMetricsOverride 设视口、CSS.forcePseudoState 采 hover），不调用不存在的 browser_hover / browser_resize"},
+        {"name": "degraded_verification_explained", "description": "说明无 Python 时校验的降级方式与保真度上限"},
+        {"name": "no_functional_docs", "description": "不产出功能文档"}
+      ]
+    }
+  ]
+}

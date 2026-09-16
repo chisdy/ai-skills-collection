@@ -1,0 +1,73 @@
+{
+  "skill_name": "website-clone",
+  "fixture": "fixture-site（共享：cd evals/website-clone/fixture-site && python3 -m http.server 8765；三个技能的 evals 都指向它）",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "full-clone-from-url",
+      "prompt": "帮我完整复刻 http://localhost:8765/index.html 这个灯具商店，功能和样式都要，用 React 19 + Tailwind v4。这是我自己搭的练习站，随便采。",
+      "expected_output": "先一句话确认用途（学习 / 自有站点）并一次问完问卷（页面范围、账号 / 后台、视口、图标 / 动画方案、交付目录；技术栈已给不再问）。确认 website-clone-functional 与 website-clone-visual 都可用。运行 discover_site.py 产出 clone-package/site-map.json（≥ 5 页，含 landing / list / auth / checkout / legal；加 --render 或内联浏览器补链接后含 detail），把发现结果给用户过目。然后按顺序：先读 website-clone-functional 的 SKILL.md 委派并传入问卷答案与 site-map.json，得到 docs/PRD.md、frontend-ia.md、admin-ia.md；再以 PRD 的 Must / Should 页面为范围读 website-clone-visual 的 SKILL.md 委派，得到 visual/capture/blueprint.md、visual/src/、visual/compare/。最后写 clone-package/README.md 汇总，后续开发只指向 fullstack-expert / master-architect-workflow。",
+      "files": ["fixture-site/"],
+      "assertions": [
+        {"name": "compliance_confirmed_first", "description": "动手前用一句话确认用途，且在用户说自有站点后才允许子技能开 --allow-writes（或明确不开）"},
+        {"name": "does_not_ask_scope", "description": "不问'要功能还是要样式'——主控默认两者都做"},
+        {"name": "checks_both_subskills", "description": "在委派前确认 website-clone-functional 与 website-clone-visual 都在 available_skills / AGENTS.md / openskills list 中"},
+        {"name": "runs_discover_first", "description": "先运行 scripts/discover_site.py 生成 clone-package/site-map.json，并在委派前把页数 / 类型 / 登录墙结果给用户看"},
+        {"name": "functional_before_visual", "description": "先读取并执行 website-clone-functional 的 SKILL.md，产出三份文档后再读取 website-clone-visual 的 SKILL.md；视觉范围引用 PRD 页面清单的优先级"},
+        {"name": "passes_answers_to_subskills", "description": "委派时把问卷答案（栈、视口、账号、自有站点）与 site-map.json 一并传给子技能，子技能不重复提问"},
+        {"name": "does_not_redo_subskill_work", "description": "主控自己不写 PRD、不写页面代码、不做像素对比；这些都来自子技能产出"},
+        {"name": "writes_package_readme", "description": "最终产出 clone-package/README.md，含范围、合规声明、产物索引、未覆盖 / 需确认、后续建议"},
+        {"name": "no_backend_work", "description": "不搭后端、不建数据库、不写接口；后续开发只指向 fullstack-expert / master-architect-workflow"}
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "user-narrows-to-visual-midway",
+      "prompt": "复刻 http://localhost:8765/index.html 这个站。—— 哦等一下，我其实只要它的样式和动画，功能那些不用管。",
+      "expected_output": "主控识别用户只要视觉一半，停止自身流程：把已问到的答案（URL、用途）与已有的 site-map.json（若已生成）交给 website-clone-visual，读其 SKILL.md 按它的流程执行，不再产出 PRD / IA，也不再回到主控写 clone-package/README.md 汇总。",
+      "files": ["fixture-site/"],
+      "assertions": [
+        {"name": "hands_off_to_visual", "description": "读取 website-clone-visual 的 SKILL.md 并按其流程执行，把已知答案传过去"},
+        {"name": "skips_functional", "description": "不读取、不执行 website-clone-functional，不产出 PRD / frontend-ia / admin-ia"},
+        {"name": "exits_master_flow", "description": "不再执行主控的汇总步骤（不写 clone-package/README.md），视觉子技能的产出就是交付"}
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "with-admin-account",
+      "prompt": "完整复刻 http://localhost:8765/index.html，这是我们自己的测试环境。后台在 http://localhost:8765/admin/（我可以在浏览器里登录），静态 HTML 就行。",
+      "expected_output": "问卷记录：自有测试站点（子技能可开 --allow-writes）、后台 URL、用户自行登录。发现后委派 functional 时传入 --admin-url 与登录方式（内联浏览器由用户登录，或 --storage-state），admin-ia.md 中后台采到的模块标实采；委派 visual 时传入静态栈与登录态说明。README 合规声明写明自有站点与后台实采范围。",
+      "files": ["fixture-site/"],
+      "assertions": [
+        {"name": "records_ownership_and_admin", "description": "问卷答案里明确记录自有 / 测试站点与后台 URL，并把它们传给功能子技能（--admin-url、允许写请求的决定）"},
+        {"name": "login_by_user", "description": "登录由用户在内联浏览器完成或提供 storage-state，模型不猜密码、不绕过"},
+        {"name": "admin_marked_observed", "description": "汇总 README 指出 admin-ia.md 中哪些模块为实采、哪些仍为推断"},
+        {"name": "stack_passed_not_reasked", "description": "用户已说静态 HTML，视觉子技能不再问栈"}
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "subskill-missing",
+      "prompt": "把 http://localhost:8765/index.html 完整克隆一份，功能和页面都要。（环境：available_skills 里只有 website-clone 与 website-clone-visual，没有 website-clone-functional。）",
+      "expected_output": "合规确认与问卷照常，运行 discover_site.py 产出 clone-package/site-map.json 并给用户看结果。然后停下：说明缺少 website-clone-functional，给出 openskills install https://github.com/chisdy/ai-skills-collection/tree/main/website-clone-functional，告知装好后从'委派功能子技能'一步继续。不自行写 PRD / IA，不只做视觉一半。",
+      "files": ["fixture-site/"],
+      "assertions": [
+        {"name": "still_runs_discovery", "description": "缺子技能时仍完成合规确认与 discover_site.py，site-map.json 留在 clone-package/"},
+        {"name": "stops_with_install_command", "description": "停下并给出安装缺失子技能的 openskills install 命令，说明从哪一步继续"},
+        {"name": "no_half_work", "description": "不自行复述功能子技能的工作流写 PRD / IA，也不跳过功能直接做视觉复刻"}
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "spa-discovery-warning",
+      "prompt": "完整复刻 http://localhost:8766/ （一个首页 HTML 只有 <div id=\"root\"></div> 和 module 脚本的 SPA）。",
+      "expected_output": "discover_site.py 输出 WARN（首页同域链接 < 3、根容器为空 + module 脚本），site-map.json 只有首页。主控不继续委派，先换发现方式：有 Playwright 加 --render 重跑；否则用内联浏览器打开首页、Runtime.evaluate 注入 scripts/collect/links.js，把链接补进 site-map.json。补齐后再委派。",
+      "files": [],
+      "assertions": [
+        {"name": "recognizes_spa_warning", "description": "识别 discover_site.py 的 spa WARN，并明确说明 site-map.json 只有首页时不能继续委派"},
+        {"name": "switches_discovery_method", "description": "改用 --render 或内联浏览器注入主控自己的 scripts/collect/links.js 补链接，而不是引用子技能目录下的文件"},
+        {"name": "delegates_after_fix", "description": "页面清单补齐后才进入功能 → 视觉的委派顺序"}
+      ]
+    }
+  ]
+}

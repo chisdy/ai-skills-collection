@@ -1,0 +1,9 @@
+# 只有 capture_site.py 与 compare_pages.py 需要 playwright；pillow 用于像素对比与区块裁片（可选）。
+# analyze_capture.py / map_icons.py / download_assets.py 仅标准库。
+#
+# 安装（Homebrew / 系统 Python 会被 PEP 668 拒绝裸 pip install，用 venv 或 uv）：
+#   python3 -m venv /tmp/wc-venv && /tmp/wc-venv/bin/pip install -r requirements.txt && /tmp/wc-venv/bin/playwright install chromium
+#   或：uv run --with playwright,pillow python scripts/capture_site.py <url>
+# 装不上：改走 references/capture-guide.md 的内联浏览器路径，注入同一批 collect/*.js。
+playwright>=1.45
+pillow>=10
