@@ -17,6 +17,7 @@
 | Website Clone | `website-clone/` | 1.0.0 | 完整复刻网站的主控：合规确认、站点发现（`discover_site.py`），固定顺序委派下面两个子技能，汇总 `clone-package/` |
 | Website Clone Visual | `website-clone-visual/` | 1.0.0 | 网页视觉与效果复刻：Playwright 脚本 / 内联浏览器双路径采集 DOM、CSSOM、计算样式、token、动画、图标，生成复刻蓝图，按所选栈（静态 / React 19 / Vue 3.5 + Tailwind v4）写页面代码并做像素对比 |
 | Website Clone Functional | `website-clone-functional/` | 1.0.0 | 网站功能架构分析：逐页采集导航 / 表单 / 按钮 / 列表 / 控件 / 网络请求（默认拦截所有写请求），产出 PRD、前端功能信息架构、admin 功能信息架构，每条标注实采 / 推断 |
+| Generating User Manuals from Codebase | `generating-user-manuals-from-codebase/` | 1.0.0 | 从项目代码与运行界面生成整本用户手册：路由 / i18n / 权限 / 校验 / 状态 / 错误映射 → 功能清单 → 内联浏览器实采 → 手册大纲（停下等确认）→ 按「定向 / 使用 / 理解 / 恢复」逐篇撰写 + `annotate.js` 带标注截图；三种入口模式（全量 / 仅大纲 / 仅撰写），未验证项进编辑备注不进正文 |
 
 安装（把目录名替换成上表中的任一个）：
 
@@ -63,6 +64,12 @@ openskills install https://github.com/chisdy/ai-skills-collection/tree/main/plan
 
 三个技能共用一个 fixture：`evals/website-clone/fixture-site/`（多页静态电商小站，`python3 -m http.server` 起）。需要 Playwright 的只有 `capture_site.py` / `compare_pages.py` / `crawl_features.py`（venv 或 uv 安装，PEP 668）；分析、映射、发现脚本仅标准库，保证内联浏览器路径也能跑。
 
+### Generating User Manuals from Codebase
+
+读者是最终用户与管理员，不是开发者。方法是先采证再写：文案只认 i18n 文件 / 模板字面文本 / 界面实采三种来源（`UploadAssetDialog` 不等于按钮叫"上传素材"），限制与权限只认校验规则、守卫代码或实采；写进正文的每个断言都能指回 `_inventory.md` 的证据列，找不到证据的进 `_editor-notes.md`。五阶段：范围确认（最小问卷）→ 代码发现（`references/evidence-sources.md` 按栈列出路由 / i18n / 权限 / 校验 / 状态 / 错误的位置与 grep 关键词，产出功能清单）→ 界面验证（`cursor-ide-browser` / Playwright MCP 两张工具映射表，逐功能 snapshot 回填，零写操作）→ 手册大纲（四架书内容模型 + 每类页面必备节，写 `_outline.md` 后**结束回合等用户确认**；用户可口头改、直接改文件或把 `status: draft` 改 `confirmed`）→ 逐篇撰写与截图（阶段 4 以磁盘上的 `_outline.md` 为唯一依据；`scripts/collect/annotate.js` 在页面上叠高亮框 / 编号角标 / 遮罩后再截，一图一焦点、单图标注 ≤ 4、必带 alt、脱敏）→ QA（覆盖率、证据、截图、结构、格式）。三种入口模式：全量 / 仅大纲 / 仅撰写，共用问卷与硬规则，状态在文件里所以跨对话可恢复。支持单文件 / 多文件 Markdown 与 VitePress / Docusaurus / MkDocs 的 sidebar 片段。不写 API 文档、PRD，不改代码。
+
+评测 fixture `evals/generating-user-manuals-from-codebase/fixture-repo/` 是纯静态小站（hash 路由 + i18n + 权限点 + 校验 + 状态 + 错误码），埋了"组件名 ≠ 文案"、"仅代码可见的 500 行限制"、"无权限时菜单隐藏 vs 按钮不显示"、"演示邮箱需脱敏"等陷阱；`overlays/confirmed-outline/` 预置一份已确认的大纲供仅撰写模式用，`overlays/existing-manual/` 在其上多一本已成文一部分的手册供更新模式用。
+
 ## 技能格式
 
 每个技能遵循 Agent Skills 规范：
@@ -75,7 +82,7 @@ openskills install https://github.com/chisdy/ai-skills-collection/tree/main/plan
 
 评测不放在技能目录里：`openskills install` 会复制整个技能目录，用户用不到 fixture 和断言。作者侧回归放在仓库根目录 `evals/<skill-name>/`（`evals.json`，以及需要时的 `fixture-repo/`、`overlays/`）。官方 `.skill` 打包同样排除 `evals/`。
 
-版本号写在 frontmatter 的 `metadata.version`（规范不支持顶层 `version` 字段），值为字符串。目前 `plan-and-diff-review` / `plan-review` / `implementation-review` / `apple-hig-design` / `apple-icon-design` / `website-clone` / `website-clone-visual` / `website-clone-functional` 已启用版本号，其余三个待统一。
+版本号写在 frontmatter 的 `metadata.version`（规范不支持顶层 `version` 字段），值为字符串。目前 `plan-and-diff-review` / `plan-review` / `implementation-review` / `apple-hig-design` / `apple-icon-design` / `website-clone` / `website-clone-visual` / `website-clone-functional` / `generating-user-manuals-from-codebase` 已启用版本号，其余三个待统一。
 
 `workspaces/` 是 skill 评估的运行产物目录，已被 gitignore。
 
@@ -99,6 +106,7 @@ openskills install https://github.com/chisdy/ai-skills-collection/tree/main/plan
 - [x] Website Clone — 完整复刻网站的主控（合规、发现、委派、汇总）
 - [x] Website Clone Visual — 网页视觉与效果复刻（采集 → 蓝图 → 页面代码 → 像素对比）
 - [x] Website Clone Functional — 网站功能架构分析（PRD / 前端 IA / admin IA）
+- [x] Generating User Manuals from Codebase — 从代码与界面生成用户手册（功能清单 → 大纲确认 → 逐篇撰写 + 标注截图）
 - [ ] 数据库设计专家技能
 - [ ] API 设计最佳实践技能
 - [ ] 性能优化专家技能

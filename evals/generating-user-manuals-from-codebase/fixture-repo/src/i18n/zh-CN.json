@@ -1,0 +1,80 @@
+{
+  "app": {
+    "name": "Lumen 素材库",
+    "currentRole": "当前角色"
+  },
+  "nav": {
+    "dashboard": "概览",
+    "assets": "素材",
+    "members": "成员",
+    "settings": "设置"
+  },
+  "dashboard": {
+    "title": "概览",
+    "totalAssets": "素材总数",
+    "processing": "处理中",
+    "quickImport": "去导入素材"
+  },
+  "assets": {
+    "title": "素材",
+    "import": "导入文件",
+    "importTitle": "导入素材",
+    "chooseFile": "选择文件",
+    "fileHint": "支持 CSV、XLSX，单个文件不超过 5 MB",
+    "nameLabel": "素材名称",
+    "namePlaceholder": "例如：2026 春季目录",
+    "startImport": "开始导入",
+    "cancel": "取消",
+    "delete": "删除",
+    "deleteTitle": "删除素材",
+    "deleteConfirm": "删除后无法恢复，引用该素材的页面会显示为空。确定删除「{name}」吗？",
+    "deleteAction": "确认删除",
+    "empty": "还没有素材，点击右上角「导入文件」开始。",
+    "columns": {
+      "name": "名称",
+      "status": "状态",
+      "owner": "创建人",
+      "updated": "更新时间",
+      "actions": "操作"
+    },
+    "toast": {
+      "imported": "已创建导入任务，处理完成后状态会变为「已就绪」",
+      "deleted": "素材已删除"
+    }
+  },
+  "members": {
+    "title": "成员",
+    "invite": "邀请成员",
+    "columns": {
+      "name": "姓名",
+      "email": "邮箱",
+      "role": "角色"
+    },
+    "forbidden": "你没有权限查看成员列表，请联系管理员。"
+  },
+  "settings": {
+    "title": "设置",
+    "language": "界面语言",
+    "notifyOnReady": "素材处理完成时通知我",
+    "save": "保存",
+    "saved": "设置已保存"
+  },
+  "status": {
+    "uploading": "上传中",
+    "processing": "处理中",
+    "ready": "已就绪",
+    "failed": "处理失败"
+  },
+  "errors": {
+    "E1001": "文件类型不支持，请上传 CSV 或 XLSX",
+    "E1002": "文件超过 5 MB",
+    "E1003": "素材名称不能为空",
+    "E2001": "处理失败，请重新导入",
+    "E3001": "你没有权限执行此操作"
+  },
+  "roles": {
+    "viewer": "查看者",
+    "editor": "编辑者",
+    "admin": "管理员"
+  }
+}

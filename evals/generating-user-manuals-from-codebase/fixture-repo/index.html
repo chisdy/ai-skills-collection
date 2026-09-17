@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lumen 素材库</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" data-i18n="app.name"></div>
+    <label class="role-switch">
+      <span data-i18n="app.currentRole"></span>
+      <select id="role-select" aria-label="切换演示角色">
+        <option value="viewer">viewer</option>
+        <option value="editor">editor</option>
+        <option value="admin">admin</option>
+      </select>
+    </label>
+  </header>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="主导航"></nav>
+    <main class="content" id="view"></main>
+  </div>
+  <div id="modal-root"></div>
+  <div id="toast-root" aria-live="polite"></div>
+
+  <script src="src/i18n.js"></script>
+  <script src="src/status.js"></script>
+  <script src="src/errors.js"></script>
+  <script src="src/validation.js"></script>
+  <script src="src/permissions.js"></script>
+  <script src="src/data.js"></script>
+  <script src="src/components/UploadAssetDialog.js"></script>
+  <script src="src/components/ConfirmDialog.js"></script>
+  <script src="src/views.js"></script>
+  <script src="src/router.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

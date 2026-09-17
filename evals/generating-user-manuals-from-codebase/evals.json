@@ -1,0 +1,71 @@
+{
+  "skill_name": "generating-user-manuals-from-codebase",
+  "notes": "手册措辞的好坏交给人工看；下面的断言只覆盖可客观验证的纪律：模式判定、问卷、功能清单覆盖率、大纲关卡（停下等确认）、文案来源（i18n 而非组件名）、权限边界写两面、仅代码的限制不进正文、危险操作警告位置、截图规范（alt / 标注数 / 脱敏）、不暴露实现。\n\nfixture-repo 是纯静态站，`python3 -m http.server 8766` 即可打开，浏览器路径与 annotate.js 都能真跑。埋的陷阱：组件名 UploadAssetDialog 但按钮文案是「导入文件」/ 对话框标题「导入素材」；validation.js 里 maxRows=500 界面无任何提示；members 路由无权限时菜单隐藏（而 assets 无权限时只是按钮不显示）；成员列表含演示邮箱；邀请成员按钮 disabled 无实现；status.js 有状态流转但没有任何时长信息；index.html 里顶栏角色下拉 aria-label=\"切换演示角色\"、侧栏 aria-label=\"主导航\" 是绕过 i18n 的字面文本，只扫 i18n 文件会漏掉（evidence-sources.md 要求同时扫字面文本）。\n\noverlays/：confirmed-outline 只有已确认的 _inventory.md / _outline.md（用例 3）；existing-manual 在此基础上多了一本已成文一部分的手册（README / about / notification-settings / limits / changelog / _editor-notes，用例 4）。",
+  "fixture": "evals/generating-user-manuals-from-codebase/fixture-repo",
+  "fixture_setup": "cp -R evals/generating-user-manuals-from-codebase/fixture-repo <run-dir>/repo && cd <run-dir>/repo && (python3 -m http.server 8766 &) ；用例 3 再叠加 cp -R evals/generating-user-manuals-from-codebase/overlays/confirmed-outline/. <run-dir>/repo/ ；用例 4 改叠加 cp -R evals/generating-user-manuals-from-codebase/overlays/existing-manual/. <run-dir>/repo/",
+  "evals": [
+    {
+      "id": 1,
+      "name": "full-manual-with-outline-gate",
+      "prompt": "给这个项目写一份用户手册，面向使用它的普通用户和管理员。项目已经在 http://localhost:8766 跑着，顶栏的角色下拉可以切换 viewer / editor / admin 演示不同角色。中文，输出到 docs/manual/。",
+      "expected_output": "开头说明进入全量模式。问卷只问缺的（大纲要不要确认、是否算测试环境可做删除），已给的（读者、语言、输出位置、可运行）不重复问。阶段 1 从 router.js / i18n / permissions.js / validation.js / status.js / errors.js 提取，产出 docs/manual/_inventory.md，功能行覆盖 4 条路由下的全部用户可感知功能（概览、素材列表、导入、删除、成员、通知设置），每行有 文件:行 证据，验证状态初值仅代码。阶段 2 在浏览器里切三个角色分别 snapshot，回填实采；删除只截确认框后取消。阶段 3 写 _outline.md（status: draft）并在聊天给确认摘要后结束回合，不写任何正文。用户回复确认后阶段 4 逐篇写，截图带标注、带 alt；阶段 5 汇总 _editor-notes.md。",
+      "assertions": [
+        {"name": "declares_mode", "description": "回复开头说明按全量模式处理"},
+        {"name": "asks_only_missing", "description": "问卷不重复问用户已经给的信息（读者、语言、输出位置、已运行）；至多问确认方式与是否为测试环境"},
+        {"name": "inventory_covers_all_routes", "description": "_inventory.md 的功能行覆盖 概览 / 素材查看 / 导入 / 删除 / 成员查看 / 通知设置；每行证据列有 文件:行"},
+        {"name": "outline_gate_stops", "description": "写完 _outline.md（status: draft）并给出确认摘要（节数、覆盖 N/M、验证状态计数、无截图的节、未决问题）后结束回合；该轮内没有创建任何 get-started/ guides/ reference/ troubleshooting/ 下的正文文件"},
+        {"name": "copy_from_i18n_not_identifier", "description": "正文里导入入口写「导入文件」、对话框写「导入素材」；没有出现「上传素材」或 UploadAssetDialog"},
+        {"name": "permission_boundary_two_sided", "description": "导入 / 删除 / 成员三处都写了谁可以做，以及其他角色看到什么（按钮不显示 / 菜单隐藏 / 权限提示原文「你没有权限查看成员列表，请联系管理员。」）；没有把 members 的「菜单隐藏」推广到 assets"},
+        {"name": "code_only_limit_not_in_body", "description": "500 行限制不出现在用户正文；出现在 _editor-notes.md 或篇末编辑备注中，并说明界面无提示"},
+        {"name": "no_duration_claims", "description": "正文没有「处理通常需要几分钟」之类无证据的时长断言"},
+        {"name": "warning_before_confirm_step", "description": "删除素材一篇中，后果警告（无法恢复、引用页面显示为空）紧贴「确认删除」步骤之前，不在篇末通用说明里"},
+        {"name": "no_implementation_leak", "description": "正文不出现 #/assets、router.js、hasPermission、ErrorCode、E1001 等路由 / 文件 / 函数 / 枚举标识"},
+        {"name": "screenshots_follow_spec", "description": "每张截图 Markdown 引用带非空 alt 且不含「截图」二字；单图标注 ≤ 4；删除确认框有截图；图前有文字"},
+        {"name": "screenshot_redaction", "description": "成员列表截图中演示邮箱被 mask 遮住或替换，不出现 example-corp.com 明文"},
+        {"name": "coverage_and_exclusions", "description": "阶段 5 交付语给出覆盖 N/M；members-invite 列在「本版不含」并说明按钮禁用无实现"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "outline-only",
+      "prompt": "先别写手册正文，帮我把这个项目的功能梳理一下，出一份用户手册的大纲和目录就行。项目在 http://localhost:8766。",
+      "expected_output": "开头说明进入仅大纲模式。跑阶段 0–3：问卷（读者 / 语言 / 格式）、_inventory.md、浏览器验证、_outline.md（status: draft）；给确认摘要后结束。不创建任何正文文件，不截带标注的正式截图（原始帧可选）。",
+      "assertions": [
+        {"name": "declares_outline_mode", "description": "回复开头说明按仅大纲模式处理"},
+        {"name": "produces_inventory_and_outline", "description": "产出 _inventory.md 与 _outline.md 两个文件；大纲每节有来源功能 ID、验证状态、截图计划"},
+        {"name": "no_body_written", "description": "没有创建 get-started/ guides/ reference/ troubleshooting/ 下的任何文件"},
+        {"name": "outline_uses_four_shelves", "description": "大纲按 定向 / 使用 / 理解 / 恢复 分组，两级；使用书架下按任务分组且标题动词开头"},
+        {"name": "exclusions_listed", "description": "members-invite 在「本版不含」并写理由；未决问题含处理时长与 500 行限制"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "write-from-confirmed-outline",
+      "overlay": "confirmed-outline",
+      "prompt": "docs/manual/_outline.md 我已经确认了，按它把手册写出来。项目在 http://localhost:8766 跑着。",
+      "expected_output": "开头说明进入仅撰写模式。读磁盘上的 _outline.md（status: confirmed）与 _inventory.md，不重新做问卷、不重新扫代码建清单、不再停下要确认。按大纲逐篇写到指定文件名；按截图计划在浏览器里注入 annotate.js 截带标注的图；限制汇总里不写 500 行、把它放编辑备注；成员截图邮箱 mask；结束给覆盖 N/M 与编辑备注条数。",
+      "assertions": [
+        {"name": "declares_write_mode", "description": "回复开头说明按仅撰写模式处理，并说明以 docs/manual/_outline.md 为依据"},
+        {"name": "no_requestionnaire_no_rescan", "description": "不重复问读者 / 语言 / 格式；不重新生成 _inventory.md；不再停下要求确认大纲"},
+        {"name": "files_match_outline", "description": "创建的文件名与大纲「文件」列一致（如 guides/assets/delete-assets.md、reference/permissions.md）；大纲里的每节都成文"},
+        {"name": "screenshot_plan_followed", "description": "快速开始有导入对话框编号角标图（1 选择文件、2 素材名称、3 开始导入）；删除有确认框图；成员图邮箱被 mask"},
+        {"name": "annotate_js_used_and_cleared", "description": "截图前注入 scripts/collect/annotate.js 并调用 __annotate，截图后调用 clear()（从工具调用序列可见）"},
+        {"name": "code_only_limit_in_notes", "description": "reference/limits.md 正文不含 500 行；_editor-notes.md 含该条及「界面无提示」说明"},
+        {"name": "outline_notes_respected", "description": "大纲「备注」列的要求被执行：快速开始以 editor 角色截；删除篇警告紧贴「确认删除」；管理成员不写邀请"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "update-existing-manual",
+      "overlay": "existing-manual",
+      "prompt": "产品加了一个功能：设置页多了「界面语言」可以切换中英文（之前是灰的）。帮我更新一下 docs/manual 里的用户手册。",
+      "expected_output": "识别为更新已有手册（全量模式的增量形态）：先读现有 _outline.md / _inventory.md / _editor-notes.md 与已成文的 guides/settings/notification-settings.md、reference/limits.md、appendix/changelog.md；在代码里核对该变化（当前 fixture 里 language select 仍是 disabled，i18n 只有 zh-CN）——发现代码与用户描述不一致，停下说明冲突并询问，而不是照用户口述写进正文。若用户坚持，正文只写代码能证明的部分，其余进编辑备注。",
+      "assertions": [
+        {"name": "reads_existing_first", "description": "先读 overlay 里已有的 _outline.md、_inventory.md、_editor-notes.md 与 notification-settings.md / limits.md / changelog.md（从工具调用可见），不重新做问卷、不重建 _inventory.md、不重写整本手册"},
+        {"name": "verifies_against_code", "description": "去 views.js / i18n 核对「界面语言」是否可切换；发现 select 仍为 disabled 且只有 zh-CN"},
+        {"name": "conflict_not_promoted", "description": "不把用户口述的「可切换中英文」直接写进正文；在回复中指出代码与描述不一致并询问，或写进编辑备注；notification-settings.md 的「界面语言」一节与 limits.md 的「界面语言 仅简体中文」一行在得到用户答复前保持原样"},
+        {"name": "incremental_edit_only", "description": "若最终有改动，只改 notification-settings.md、limits.md、changelog.md（及 _editor-notes.md），about.md 与 README.md 除目录链接外不改；变更以新条目追加到 appendix/changelog.md 顶部，不覆盖 0.3.0 条目"}
+      ]
+    }
+  ]
+}
